@@ -118,7 +118,7 @@ after that create a env file in root folder of server - location (/server/.env)
 ```bash
 # your mongodb uri - replace username and password and provide yours
 
-MONGO_DB_URI="mongodb+srv://username:password@project.wvpqroq.mongodb.net/genkartv2?retryWrites=true&w=majority&appName=project"
+MONGO_DB_URI="mongodb+srv://username:password@project.wvpqroq.mongodb.net/genkartv"
 # gmail to send mail to users for reset password
 EMAIL_USER="genriotesting@gmail.com"
 # gmail app password to provide access to send emails --for info search how to send mail use nodemailer in node js
