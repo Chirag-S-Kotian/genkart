@@ -17,4 +17,4 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 5555
 
-CMD ["node", "server.js"]
+CMD ["node", "index.js"]
