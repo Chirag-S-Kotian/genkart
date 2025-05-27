@@ -2,8 +2,10 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-
 const bodyParser = require('body-parser')
+
+// Add rate limiting
+const { apiLimiter } = require("./config/rateLimit");
 
 const router = require("./routes/router");
 const authRoutes = require("./routes/authRoutes");
@@ -22,8 +24,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 
-
 app.use(cookieParser());
+
+// Apply rate limiting to all API routes
+app.use('/api', apiLimiter);
+
 app.use('/',router);
 app.use('/api/auth',authRoutes);
 app.use('/api/cart',cartRoutes);
