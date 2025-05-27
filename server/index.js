@@ -29,11 +29,11 @@ app.use(cookieParser());
 // Apply rate limiting to all API routes
 app.use('/api', apiLimiter);
 
-app.use('/',router);
-app.use('/api/auth',authRoutes);
-app.use('/api/cart',cartRoutes);
-app.use('/api/product',productRoutes);
-app.use('/api/user',userRoutes);
+app.use('/', router);
+app.use('/api/auth', authRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/product', productRoutes);
+app.use('/api/user', userRoutes);
 
 
 
@@ -46,7 +46,7 @@ app.use('/api/user',userRoutes);
 // app.use(allowCrossDomain);
 
 
- // for parsing application/json
+// for parsing application/json
 // app.use(bodyParser.urlencoded({ extended: true }))
 
 
