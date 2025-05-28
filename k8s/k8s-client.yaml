@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: client
-          image: gen-client:v1
+          image: chirag117/gen-client:v1
           ports:
             - containerPort: 3000
           envFrom:

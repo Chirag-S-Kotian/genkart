@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: gen-serv:v1
+          image: chirag117/gen-serv:v1
           ports:
             - containerPort: 5555
           envFrom:
