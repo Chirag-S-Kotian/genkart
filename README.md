@@ -265,6 +265,36 @@ npm run dev
 
 ---
 
+## Admin Account Setup & Access
+
+> **Note:** For security, there is no public admin signup UI. Admin creation is a one-time backend operation.
+
+### 1. Create Admin User (One-Time)
+- Go to `/server/routes/authRoutes.js` and **uncomment** the `admin signup` route if it's commented.
+- Use Postman or cURL to send a POST request to:
+  
+  ```http
+  POST http://localhost:5555/api/auth/admin/signup
+  Content-Type: application/json
+  {
+    "email": "your-admin-email@example.com",
+    "password": "your-strong-password"
+  }
+  ```
+- After successful creation, **comment out** the signup route again to prevent unauthorized admin creation.
+
+### 2. Admin Login
+- Go to the frontend: `http://localhost:3000/admin`
+- Use the admin email and password you set above to log in.
+- Access the admin dashboard at `/admin/secure/home` for product, user, and category management.
+
+### 3. Security Best Practices
+- Never expose the admin signup route in production.
+- Use strong, unique passwords for admin accounts.
+- Rotate admin credentials periodically.
+
+---
+
 ## Contributing
 Pull requests and issues are welcome! Please open an issue for bugs or feature requests.
 
