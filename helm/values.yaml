@@ -1,0 +1,51 @@
+# Default values for Genkart Helm chart.
+replicaCount: 2
+
+image:
+  client:
+    repository: chirag117/gen-client
+    tag: v1
+    pullPolicy: IfNotPresent
+  server:
+    repository: chirag117/gen-serv
+    tag: v1
+    pullPolicy: IfNotPresent
+
+service:
+  client:
+    type: ClusterIP
+    port: 3000
+  server:
+    type: ClusterIP
+    port: 5555
+
+resources:
+  client:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  server:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  host: genkart.com
+  tls:
+    enabled: true
+    secretName: genkart-tls
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+# Example secrets (base64-encoded, override via --set or values-secret.yaml)
+secrets:
+  client: {}
+  server: {}
