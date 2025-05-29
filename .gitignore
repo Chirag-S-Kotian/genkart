@@ -8,7 +8,10 @@
 ./client/.env
 ./server/.env
 
-
-
+# Kubernetes secrets
 k8s-client-secret.yaml
 k8s-server-secret.yaml
+
+# helm charts secrets
+helm/templates/server-secret.yaml
+helm/templates/client-secret.yaml
