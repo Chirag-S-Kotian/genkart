@@ -16,7 +16,7 @@
 
 ---
 
-## Table of Contents
+## 📚 Table of Contents
 - [Overview](#overview)
 - [Tech Stack](#tech-stack)
 - [Key Features](#key-features)
@@ -34,18 +34,19 @@
   - [Secret Management](#secret-management)
 - [Developer & DevOps Commands](#developer--devops-commands)
 - [Troubleshooting](#troubleshooting)
+- [Admin Account Setup](#admin-account-setup)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
 
 ---
 
-## Overview
+## 📝 Overview
 Genkart is a sophisticated e-commerce platform designed to demonstrate a wide range of web development skills. Unlike traditional e-commerce sites, Genkart intentionally omits payment and "Buy Now" options, focusing instead on the user experience, product management, and robust backend functionality. The project is built using cutting-edge technologies and frameworks to ensure scalability, performance, and maintainability.
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 - **Frontend:** Next.js (React)
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB Atlas
@@ -55,7 +56,7 @@ Genkart is a sophisticated e-commerce platform designed to demonstrate a wide ra
 
 ---
 
-## Key Features
+## ✨ Key Features
 - **Authentication & Authorization:** JWT-based, role-based access (admin/customer)
 - **Product Management:** CRUD for products/categories, Cloudinary image storage
 - **User Profile:** Manage info, history, settings
@@ -63,7 +64,7 @@ Genkart is a sophisticated e-commerce platform designed to demonstrate a wide ra
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 ```
 Genkart/
 ├── client/           # Next.js frontend
@@ -79,7 +80,7 @@ Genkart/
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Requirements
 - [Node.js](https://nodejs.org/en/download/package-manager)
@@ -148,7 +149,7 @@ npm run dev
 
 ---
 
-## DevOps & Deployment
+## ⚙️ DevOps & Deployment
 
 ### Docker & Docker Compose
 - Build and push both images to Docker Hub:
@@ -223,7 +224,7 @@ npm run dev
 
 ---
 
-## Developer & DevOps Commands
+## 🧑‍💻 Developer & DevOps Commands
 
 ### Docker
 - Build: `docker build -f client/next.dockerfile -t <user>/gen-client:v1 ./client`
@@ -251,7 +252,7 @@ npm run dev
 
 ---
 
-## Troubleshooting
+## 🛡️ Troubleshooting
 - **Pods stuck in `CreateContainerConfigError`?**
   - Check if secrets exist: `kubectl get secrets`
   - Check pod logs: `kubectl logs <pod>`
@@ -265,14 +266,13 @@ npm run dev
 
 ---
 
-## Admin Account Setup & Access
+## 👑 Admin Account Setup
 
 > **Note:** For security, there is no public admin signup UI. Admin creation is a one-time backend operation.
 
 ### 1. Create Admin User (One-Time)
 - Go to `/server/routes/authRoutes.js` and **uncomment** the `admin signup` route if it's commented.
 - Use Postman or cURL to send a POST request to:
-  
   ```http
   POST http://localhost:5555/api/auth/admin/signup
   Content-Type: application/json
@@ -295,17 +295,17 @@ npm run dev
 
 ---
 
-## Contributing
+## 🤝 Contributing
 Pull requests and issues are welcome! Please open an issue for bugs or feature requests.
 
 ---
 
-## License
+## 📄 License
 This project is licensed under the terms of the MIT license. See [LICENSE](LICENSE) for details.
 
 ---
 
-## Contact
+## 📬 Contact
 **Chirag S Kotian**  
 - GitHub: [Chirag-S-Kotian](https://github.com/Chirag-S-Kotian)
 - LinkedIn: [chirag-s-kotian](https://www.linkedin.com/in/chirag-s-kotian/)
@@ -314,7 +314,5 @@ This project is licensed under the terms of the MIT license. See [LICENSE](LICEN
 - Website: [chirag-blockchian.vercel.app](https://chirag-blockchian.vercel.app/)
 
 ---
-
-#
 
 <!-- End of README -->
