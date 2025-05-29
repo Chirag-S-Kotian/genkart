@@ -20,7 +20,7 @@ spec:
             - containerPort: 5555
           envFrom:
             - secretRef:
-                name: genkart-server-secret
+                name: genkart-server-secrets
 ---
 apiVersion: v1
 kind: Service
