@@ -10,26 +10,25 @@ metadata:
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
-    {{- range .Values.ingress.tls }}
     - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
+        - {{ .Values.ingress.host | quote }}
+      secretName: {{ .Values.ingress.tls.secretName }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path | quote }}
-            pathType: {{ .pathType }}
+          - path: /
+            pathType: Prefix
             backend:
               service:
-                name: genkart-{{ .serviceName }}
+                name: genkart-client
                 port:
-                  number: {{ .servicePort }}
-          {{- end }}
-    {{- end }}
+                  number: {{ .Values.service.client.port }}
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: genkart-server
+                port:
+                  number: {{ .Values.service.server.port }}
 {{- end }}
