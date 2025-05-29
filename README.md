@@ -226,3 +226,200 @@ website:
 https://chirag-blockchian.vercel.app/
 
 this project is developed only by myself - Chirag S Kotian , to showcase my developing skills , im a fresher and im currently looking full time job oppurtunities , thank you all...
+
+---
+
+## 🚀 Quick Start
+
+### 🛠️ Requirements
+- [Node.js](https://nodejs.org/en/download/package-manager)
+- [Git](https://git-scm.com/downloads)
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Kubernetes (Minikube or other)](https://minikube.sigs.k8s.io/docs/)
+- [Helm](https://helm.sh/docs/intro/install/)
+- [ArgoCD](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+
+---
+
+## 🏗️ Project Structure
+
+```
+Genkart/
+├── client/           # Next.js frontend
+├── server/           # Node.js/Express backend
+├── helm/             # Helm chart for Kubernetes
+├── k8s/              # Raw Kubernetes manifests
+├── argocd/           # ArgoCD Application manifests
+├── docker-compose.yaml
+├── build-and-push.sh
+├── README.md
+└── ...
+```
+
+---
+
+## 🏷️ Badges
+
+![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-ready-blue?logo=kubernetes)
+![Helm](https://img.shields.io/badge/Helm-ready-blue?logo=helm)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-success?logo=argo)
+![CI/CD](https://img.shields.io/badge/CI/CD-Automated-success?logo=githubactions)
+
+---
+
+## 📝 Setup & Usage
+
+### 1. Clone the Repository
+
+```zsh
+git clone https://github.com/Chirag-S-Kotian/genkart.git
+cd genkart
+```
+
+### 2. Environment Variables
+
+- Copy `.env` templates from `/client/.env.example` and `/server/.env.example` (or create your own as described below).
+- **Never commit secrets to Git!**
+
+### 3. Local Development
+
+#### Using Docker Compose
+
+```zsh
+docker-compose up --build
+```
+- Access client: http://localhost:3000
+- Access server: http://localhost:5555
+
+#### Using Node/NPM
+
+```zsh
+# Terminal 1
+cd server
+npm install
+npm start
+
+# Terminal 2
+cd client
+npm install
+npm run dev
+```
+
+---
+
+## 🐳 Docker Image Build & Push
+
+Build and push both images to Docker Hub:
+
+```zsh
+./build-and-push.sh
+```
+
+---
+
+## ☸️ Kubernetes Deployment
+
+### 1. Raw Manifests (for Minikube/dev)
+
+```zsh
+kubectl apply -f k8s/
+```
+
+### 2. Helm Chart
+
+```zsh
+helm upgrade --install genkart ./helm --namespace default --create-namespace
+```
+
+---
+
+## 🚦 ArgoCD GitOps Workflow
+
+1. **Install ArgoCD** (if not already):
+   ```zsh
+   kubectl create namespace argocd
+   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+   ```
+2. **Apply Application Manifest:**
+   ```zsh
+   kubectl apply -f argocd/genkart-app.yaml -n argocd
+   ```
+3. **Access ArgoCD UI:**
+   ```zsh
+   kubectl port-forward svc/argocd-server -n argocd 8080:443
+   # Visit https://localhost:8080
+   # Username: admin
+   # Password: (see below)
+   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+   ```
+4. **Sync & Manage:**
+   - Login to ArgoCD UI, find `genkart` app, and sync or troubleshoot as needed.
+
+---
+
+## 🔐 Secret Management (Best Practice)
+- **Do NOT commit real secrets to Git.**
+- Use Helm's `values.yaml` for non-sensitive config, and external secret managers (e.g., [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets), [External Secrets](https://external-secrets.io/)) for production.
+- For local/dev, you can manually create secrets:
+  ```zsh
+  kubectl create secret generic genkart-client-secrets --from-literal=KEY=VALUE
+  kubectl create secret generic genkart-server-secrets --from-literal=KEY=VALUE
+  ```
+- Or use the provided Helm templates and set values via `--set` or `-f mysecrets.yaml`.
+
+---
+
+## 🧑‍💻 Developer & DevOps Commands
+
+### Docker
+- Build: `docker build -f client/next.dockerfile -t <user>/gen-client:v1 ./client`
+- Build: `docker build -f server/node.dockerfile -t <user>/gen-serv:v1 ./server`
+- Push: `docker push <user>/gen-client:v1 && docker push <user>/gen-serv:v1`
+
+### Docker Compose
+- Up: `docker-compose up --build`
+- Down: `docker-compose down`
+
+### Kubernetes
+- Apply all: `kubectl apply -f k8s/`
+- Delete all: `kubectl delete -f k8s/`
+- Get pods: `kubectl get pods`
+- Logs: `kubectl logs <pod>`
+
+### Helm
+- Install/Upgrade: `helm upgrade --install genkart ./helm --namespace default --create-namespace`
+- Uninstall: `helm uninstall genkart --namespace default`
+
+### ArgoCD
+- Apply app: `kubectl apply -f argocd/genkart-app.yaml -n argocd`
+- Delete app: `kubectl delete -f argocd/genkart-app.yaml -n argocd`
+- Port-forward UI: `kubectl port-forward svc/argocd-server -n argocd 8080:443`
+
+---
+
+## 🛠️ Troubleshooting
+- **Pods stuck in `CreateContainerConfigError`?**
+  - Check if secrets exist: `kubectl get secrets`
+  - Check pod logs: `kubectl logs <pod>`
+  - Describe pod: `kubectl describe pod <pod>`
+- **ArgoCD app out of sync?**
+  - Sync manually in UI or with `kubectl`.
+  - Check Application events in ArgoCD UI.
+- **Helm secret not found?**
+  - Ensure secret templates are rendered before deployments.
+  - For production, use sealed/external secrets.
+
+---
+
+## 📦 Contributing
+Pull requests and issues are welcome! Please open an issue for bugs or feature requests.
+
+---
+
+## 📄 License
+
+This project is licensed under the terms of the MIT license. See [LICENSE](LICENSE) for details.
+
+---
