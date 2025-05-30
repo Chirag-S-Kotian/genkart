@@ -4,21 +4,60 @@ provider "google" {
   region  = var.region
 }
 
+# Enable required Google APIs
+resource "google_project_service" "container" {
+  project = var.project_id
+  service = "container.googleapis.com"
+}
+
+resource "google_project_service" "compute" {
+  project = var.project_id
+  service = "compute.googleapis.com"
+}
+
 # Create a custom VPC for GKE
 resource "google_compute_network" "genkart_vpc" {
-  name = "genkart-vpc"
+  name                    = "genkart-vpc"
   auto_create_subnetworks = false
 }
 
-# Create a subnet for GKE
+# Create a subnet for GKE (primary subnet for pods/services)
 resource "google_compute_subnetwork" "genkart_subnet" {
   name          = "genkart-subnet"
   ip_cidr_range = "10.10.0.0/16"
   region        = var.region
   network       = google_compute_network.genkart_vpc.id
+  # Enable Private Google Access for GKE nodes
+  private_ip_google_access = true
 }
 
-# Create a GKE cluster
+# Create a secondary subnet for GKE pods (required for VPC-native clusters)
+resource "google_compute_subnetwork" "genkart_pod_subnet" {
+  name          = "genkart-pod-subnet"
+  ip_cidr_range = "10.20.0.0/16"
+  region        = var.region
+  network       = google_compute_network.genkart_vpc.id
+  purpose       = "PRIVATE"
+  role          = "ACTIVE"
+}
+
+# Create a NAT gateway for outbound internet access from private nodes
+resource "google_compute_router" "genkart_router" {
+  name    = "genkart-router"
+  network = google_compute_network.genkart_vpc.id
+  region  = var.region
+}
+
+resource "google_compute_router_nat" "genkart_nat" {
+  name                               = "genkart-nat"
+  router                             = google_compute_router.genkart_router.name
+  region                             = var.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  enable_endpoint_independent_mapping = true
+}
+
+# Create a GKE cluster with advanced security and networking
 resource "google_container_cluster" "genkart_gke" {
   name     = "genkart-gke"
   location = var.region
@@ -28,7 +67,27 @@ resource "google_container_cluster" "genkart_gke" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  ip_allocation_policy {}
+  ip_allocation_policy {
+    cluster_secondary_range_name  = google_compute_subnetwork.genkart_pod_subnet.name
+    services_secondary_range_name = google_compute_subnetwork.genkart_subnet.name
+  }
+
+  # Enable shielded nodes for security
+  enable_shielded_nodes = true
+
+  # Enable network policy for pod-level security
+  network_policy {
+    enabled  = true
+    provider = "CALICO"
+  }
+
+  # Enable master authorized networks (restrict API access)
+  master_authorized_networks_config {
+    cidr_blocks {
+      cidr_block   = "0.0.0.0/0"
+      display_name = "All networks (customize for prod)"
+    }
+  }
 
   # Disable basic auth and client certificate (recommended by Google)
   master_auth {
@@ -36,15 +95,37 @@ resource "google_container_cluster" "genkart_gke" {
       issue_client_certificate = false
     }
   }
+
+  # Enable HTTP load balancing (GCLB)
+  addons_config {
+    http_load_balancing {
+      disabled = false
+    }
+    network_policy_config {
+      disabled = false
+    }
+  }
+
+  # Enable private nodes (optional, for production)
+  # private_cluster_config {
+  #   enable_private_nodes    = true
+  #   enable_private_endpoint = false
+  #   master_ipv4_cidr_block  = "172.16.0.0/28"
+  # }
 }
 
-# Create a node pool for the cluster
+# Create a node pool for the cluster with autoscaling and security
 resource "google_container_node_pool" "genkart_nodes" {
   name       = "genkart-node-pool"
   cluster    = google_container_cluster.genkart_gke.name
   location   = var.region
 
   node_count = var.node_count
+
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 5
+  }
 
   node_config {
     machine_type = var.node_machine_type
@@ -55,11 +136,103 @@ resource "google_container_node_pool" "genkart_nodes" {
       env = var.env
     }
     tags = ["genkart-node"]
+    # Enable shielded VM features
+    shielded_instance_config {
+      enable_secure_boot          = true
+      enable_integrity_monitoring = true
+    }
+    # Enable GKE metadata server
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
   }
 }
 
-# Output kubeconfig
-output "kubeconfig" {
-  value = google_container_cluster.genkart_gke.endpoint
-  description = "GKE cluster endpoint. Use 'gcloud container clusters get-credentials' to configure kubectl."
+# Firewall rule for internal communication
+resource "google_compute_firewall" "genkart-allow-internal" {
+  name    = "genkart-allow-internal"
+  network = google_compute_network.genkart_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["0-65535"]
+  }
+  allow {
+    protocol = "udp"
+    ports    = ["0-65535"]
+  }
+  allow {
+    protocol = "icmp"
+  }
+  source_ranges = ["10.10.0.0/16", "10.20.0.0/16"]
+}
+
+# Firewall rule for node ports (for debugging/ingress)
+resource "google_compute_firewall" "genkart-allow-nodeports" {
+  name    = "genkart-allow-nodeports"
+  network = google_compute_network.genkart_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["30000-32767"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["genkart-node"]
+}
+
+# Firewall rule for health checks
+resource "google_compute_firewall" "genkart-allow-health-checks" {
+  name    = "genkart-allow-health-checks"
+  network = google_compute_network.genkart_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443"]
+  }
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+}
+
+# Reserve a static IP for the GKE ingress (for stable DNS and HTTPS)
+resource "google_compute_address" "genkart_ingress_ip" {
+  name   = "genkart-ingress-ip"
+  region = var.region
+}
+
+# Firewall rule for frontend (client) service (port 3000)
+resource "google_compute_firewall" "genkart-allow-client" {
+  name    = "genkart-allow-client"
+  network = google_compute_network.genkart_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["3000"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["genkart-node"]
+}
+
+# Firewall rule for backend (server) service (port 5555)
+resource "google_compute_firewall" "genkart-allow-server" {
+  name    = "genkart-allow-server"
+  network = google_compute_network.genkart_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["5555"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["genkart-node"]
+}
+
+# Firewall rule for ArgoCD UI (port 8080)
+resource "google_compute_firewall" "genkart-allow-argocd" {
+  name    = "genkart-allow-argocd"
+  network = google_compute_network.genkart_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["genkart-node"]
 }
