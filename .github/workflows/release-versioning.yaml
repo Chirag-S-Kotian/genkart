@@ -1,0 +1,84 @@
+# .github/workflows/release-versioning.yaml
+name: Automated Versioning & Tagging
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - LICENSE
+      - README.md
+      - readme-assets/**
+      - .gitignore
+      - terraform/**
+      - argocd/**
+      - helm/**
+      - .github/workflows/**
+      - build-and-push.sh
+
+jobs:
+  version-and-tag:
+    name: Bump Version, Tag, and Update Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Bump version
+        id: bump
+        run: |
+          latest_tag=${{ steps.get_tag.outputs.latest_tag }}
+          IFS='.' read -r -a parts <<< "${latest_tag#v}"
+          major=${parts[0]:-0}
+          minor=${parts[1]:-0}
+          patch=${parts[2]:-0}
+          patch=$((patch+1))
+          new_version="v$major.$minor.$patch"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Update Docker image tags in Helm values.yaml
+        run: |
+          sed -i "s/tag: .*/tag: '${{ steps.bump.outputs.new_version }}'/g" helm/values.yaml
+
+      - name: Update Helm chart version
+        run: |
+          sed -i "s/^version: .*/version: ${{ steps.bump.outputs.new_version }}/" helm/Chart.yaml
+
+      - name: Commit and push version bump
+        run: |
+          git add helm/values.yaml helm/Chart.yaml
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]" || echo "No changes to commit"
+          git push
+
+      - name: Create Git tag
+        run: |
+          git tag ${{ steps.bump.outputs.new_version }}
+          git push origin ${{ steps.bump.outputs.new_version }}
+
+      - name: Set output for new version
+        run: echo "::set-output name=version::${{ steps.bump.outputs.new_version }}"
+
+      - name: Print new version
+        run: echo "New version is ${{ steps.bump.outputs.new_version }}"
+
+      - name: Upload Helm chart as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart-${{ steps.bump.outputs.new_version }}
+          path: helm/
+
+      - name: Summary
+        run: |
+          echo "✅ Version bumped to ${{ steps.bump.outputs.new_version }}. Docker and Helm chart tags updated."
