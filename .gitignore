@@ -15,3 +15,4 @@ k8s-server-secret.yaml
 # helm charts secrets
 helm/templates/server-secret.yaml
 helm/templates/client-secret.yaml
+terraform/terraform.tfvars
