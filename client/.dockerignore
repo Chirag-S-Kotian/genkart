@@ -1,3 +1,4 @@
+# ignore node_modules and npm-debug.log
 **/node_modules
 npm-debug.log
 Dockerfile
