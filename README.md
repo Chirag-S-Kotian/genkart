@@ -6,14 +6,20 @@
 ![Helm](https://img.shields.io/badge/Helm-ready-blue?logo=helm)
 ![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-success?logo=argo)
 ![CI/CD](https://img.shields.io/badge/CI/CD-Automated-success?logo=githubactions)
+![Terraform](https://img.shields.io/badge/Terraform-GCP-infra-purple?logo=terraform)
+![SonarQube](https://img.shields.io/badge/Code%20Quality-SonarQube-blueviolet?logo=sonarqube)
+![Trivy](https://img.shields.io/badge/Security%20Scan-Trivy-critical?logo=trivy)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ---
 
 
-<img src="./readme-assets/herosc.png" alt="" />
-<img src="./readme-assets/exploresc.png" alt="" />
-<img src="./readme-assets/productsc.png" alt="" />
-<img src="./readme-assets/adminsc.png" alt="" />
+<p align="center">
+  <img src="./readme-assets/herosc.png" alt="Hero Screenshot" width="80%"/>
+  <img src="./readme-assets/exploresc.png" alt="Explore Screenshot" width="80%"/>
+  <img src="./readme-assets/productsc.png" alt="Product Screenshot" width="80%"/>
+  <img src="./readme-assets/adminsc.png" alt="Admin Screenshot" width="80%"/>
+</p>
 
 ---
 
@@ -33,6 +39,7 @@
   - [Helm](#helm)
   - [ArgoCD GitOps](#argocd-gitops)
   - [Secret Management](#secret-management)
+  - [CI/CD & Quality](#ci-cd--quality)
 - [Developer & DevOps Commands](#developer--devops-commands)
 - [Troubleshooting](#troubleshooting)
 - [Admin Account Setup](#admin-account-setup)
@@ -43,7 +50,7 @@
 ---
 
 ## 📝 Overview
-Genkart is a sophisticated e-commerce platform designed to demonstrate a wide range of web development skills. Unlike traditional e-commerce sites, Genkart intentionally omits payment and "Buy Now" options, focusing instead on the user experience, product management, and robust backend functionality. The project is built using cutting-edge technologies and frameworks to ensure scalability, performance, and maintainability.
+Genkart is a modern, full-stack e-commerce platform built for learning, demo, and real-world DevSecOps. It features a Next.js frontend, Node.js/Express backend, MongoDB Atlas, and a complete GitOps/DevOps pipeline with Docker, Kubernetes, Helm, ArgoCD, GCP (GKE), and Terraform. The project is designed for developer experience, security, and production-readiness.
 
 ---
 
@@ -53,15 +60,17 @@ Genkart is a sophisticated e-commerce platform designed to demonstrate a wide ra
 - **Database:** MongoDB Atlas
 - **Styling:** Tailwind CSS, Material UI, Material Tailwind
 - **Image Management:** Cloudinary
-- **DevOps:** Docker, Docker Compose, Kubernetes, Helm, ArgoCD
+- **DevOps:** Docker, Docker Compose, Kubernetes, Helm, ArgoCD, Terraform, GitHub Actions
+- **Security/Quality:** Trivy, SonarQube
 
 ---
 
 ## ✨ Key Features
-- **Authentication & Authorization:** JWT-based, role-based access (admin/customer)
+- **Authentication & Authorization:** JWT-based, role-based (admin/customer)
 - **Product Management:** CRUD for products/categories, Cloudinary image storage
 - **User Profile:** Manage info, history, settings
 - **Admin Panel:** Secure dashboard for managing products, categories, users
+- **DevSecOps:** Automated CI/CD, security scanning, code quality, GitOps deployment
 
 ---
 
@@ -223,6 +232,12 @@ npm run dev
   ```
 - Or use the provided Helm templates and set values via `--set` or `-f mysecrets.yaml`.
 
+### CI/CD & Quality
+- **GitHub Actions**: Automated build, test, scan, and deploy workflows.
+- **Trivy**: Container image vulnerability scanning in CI.
+- **SonarQube**: Code quality and security analysis in CI.
+- **Release Versioning**: Automated Helm chart and Docker tag versioning on main branch push.
+
 ---
 
 ## 🧑‍💻 Developer & DevOps Commands
@@ -313,6 +328,17 @@ This project is licensed under the terms of the MIT license. See [LICENSE](LICEN
 - Twitter: [@Chirag_S_kotian](https://twitter.com/Chirag_S_kotian)
 - Email: chirag.mca.2024@pim.ac.in
 - Website: [chirag-blockchian.vercel.app](https://chirag-blockchian.vercel.app/)
+
+---
+
+## 🎨 Sketches & UI Flow
+
+<p align="center">
+  <img src="./readme-assets/herosc.png" alt="Hero Sketch" width="40%"/>
+  <img src="./readme-assets/exploresc.png" alt="Explore Sketch" width="40%"/>
+  <img src="./readme-assets/productsc.png" alt="Product Sketch" width="40%"/>
+  <img src="./readme-assets/adminsc.png" alt="Admin Sketch" width="40%"/>
+</p>
 
 ---
 
