@@ -1,24 +1,25 @@
-﻿# Genkart-Ecommerce
+﻿<!-- Badges -->
+<p align="center>
+  <img src="https://img.shields.io/badge/Docker-ready-blue?logo=docker" alt="Docker"/>
+  <img src="https://img.shields.io/badge/Kubernetes-ready-blue?logo=kubernetes" alt="Kubernetes"/>
+  <img src="https://img.shields.io/badge/Helm-ready-blue?logo=helm" alt="Helm"/>
+  <img src="https://img.shields.io/badge/ArgoCD-GitOps-success?logo=argo" alt="ArgoCD"/>
+  <img src="https://img.shields.io/badge/CI/CD-Automated-success?logo=githubactions" alt="CI/CD"/>
+  <img src="https://img.shields.io/badge/Terraform-GCP-infra-purple?logo=terraform" alt="Terraform"/>
+  <img src="https://img.shields.io/badge/Code%20Quality-SonarQube-blueviolet?logo=sonarqube" alt="SonarQube"/>
+  <img src="https://img.shields.io/badge/Security%20Scan-Trivy-critical?logo=trivy" alt="Trivy"/>
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
+</p>
 
-<!-- Badges -->
-![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-ready-blue?logo=kubernetes)
-![Helm](https://img.shields.io/badge/Helm-ready-blue?logo=helm)
-![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-success?logo=argo)
-![CI/CD](https://img.shields.io/badge/CI/CD-Automated-success?logo=githubactions)
-![Terraform](https://img.shields.io/badge/Terraform-GCP-infra-purple?logo=terraform)
-![SonarQube](https://img.shields.io/badge/Code%20Quality-SonarQube-blueviolet?logo=sonarqube)
-![Trivy](https://img.shields.io/badge/Security%20Scan-Trivy-critical?logo=trivy)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+# Genkart-Ecommerce
 
 ---
 
-
 <p align="center">
-  <img src="./readme-assets/herosc.png" alt="Hero Screenshot" width="80%"/>
-  <img src="./readme-assets/exploresc.png" alt="Explore Screenshot" width="80%"/>
-  <img src="./readme-assets/productsc.png" alt="Product Screenshot" width="80%"/>
-  <img src="./readme-assets/adminsc.png" alt="Admin Screenshot" width="80%"/>
+  <img src="./readme-assets/herosc.png" alt="Hero Screenshot" width="60%"/>
+  <img src="./readme-assets/exploresc.png" alt="Explore Screenshot" width="60%"/>
+  <img src="./readme-assets/productsc.png" alt="Product Screenshot" width="60%"/>
+  <img src="./readme-assets/adminsc.png" alt="Admin Screenshot" width="60%"/>
 </p>
 
 ---
@@ -40,6 +41,7 @@
   - [ArgoCD GitOps](#argocd-gitops)
   - [Secret Management](#secret-management)
   - [CI/CD & Quality](#ci-cd--quality)
+- [DevSecOps Deployment Architecture](#devsecops-deployment-architecture)
 - [Developer & DevOps Commands](#developer--devops-commands)
 - [Troubleshooting](#troubleshooting)
 - [Admin Account Setup](#admin-account-setup)
