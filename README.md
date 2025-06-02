@@ -243,7 +243,7 @@ npm run dev
 ## 🏗️ DevSecOps Deployment Architecture
 
 <p align="center">
-  <img src="./readme-assets/devsecops-architecture.svg" alt="DevSecOps Architecture" width="80%"/>
+  <img src="https://raw.githubusercontent.com/Chirag-S-Kotian/genkart/main/readme-assets/devsecops-architecture.svg" alt="DevSecOps Architecture" width="80%"/>
 </p>
 
 **Architecture Overview:**
