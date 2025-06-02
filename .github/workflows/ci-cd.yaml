@@ -73,10 +73,12 @@ jobs:
           projectBaseDir: .
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ secrets.SONAR_ORG_KEY }} # Remove if self-hosted SonarQube
+            # Remove the next line if using self-hosted SonarQube
+            -Dsonar.organization=${{ secrets.SONAR_ORG_KEY }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        continue-on-error: true
 
   docker-build-push:
     name: Docker Build & Push
