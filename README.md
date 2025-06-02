@@ -240,6 +240,29 @@ npm run dev
 
 ---
 
+## 🏗️ DevSecOps Deployment Architecture
+
+<p align="center">
+  <img src="./readme-assets/devsecops-architecture.svg" alt="DevSecOps Architecture" width="80%"/>
+</p>
+
+**Architecture Overview:**
+
+- **Source Control:** GitHub hosts all code, manifests, and IaC.
+- **CI/CD:** GitHub Actions automates build, test, security scan (Trivy), code quality (SonarQube), Docker image build/push, and Helm chart versioning.
+- **Container Registry:** Docker Hub stores production-ready images.
+- **Infrastructure as Code:** Terraform provisions GCP (GKE, VPC, firewall, static IP, etc.).
+- **Kubernetes Platform:** GKE runs the application workloads securely and scalably.
+- **Helm:** Helm charts manage Kubernetes deployments, services, secrets, and ingress.
+- **GitOps:** ArgoCD continuously syncs the Helm chart from GitHub to GKE, ensuring declarative, automated deployments.
+- **Secret Management:** K8s Secrets for dev, with support for Sealed Secrets/External Secrets for production.
+- **Monitoring & Security:**
+  - Trivy scans images for vulnerabilities in CI.
+  - SonarQube analyzes code quality and security.
+  - GKE network policies, shielded nodes, and firewall rules enforce runtime security.
+
+---
+
 ## 🧑‍💻 Developer & DevOps Commands
 
 ### Docker
