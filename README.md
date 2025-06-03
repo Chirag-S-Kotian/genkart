@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/badge/Security%20Scan-Trivy-critical?logo=trivy" alt="Trivy"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
 </p>
+[![CI/CD Pipeline](https://github.com/Chirag-S-Kotian/genkart/actions/workflows/ci-cd.yaml/badge.svg)](https://github.com/Chirag-S-Kotian/genkart/actions/workflows/ci-cd.yaml)
 
 # Genkart-Ecommerce
 
