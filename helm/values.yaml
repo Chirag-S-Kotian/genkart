@@ -4,11 +4,11 @@ replicaCount: 2
 image:
   client:
     repository: chirag117/gen-client
-    tag: 'v0.0.3'
+    tag: 'v0.0.4'
     pullPolicy: IfNotPresent
   server:
     repository: chirag117/gen-serv
-    tag: 'v0.0.3'
+    tag: 'v0.0.4'
     pullPolicy: IfNotPresent
 
 service:
