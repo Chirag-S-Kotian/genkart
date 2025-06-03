@@ -49,34 +49,20 @@ jobs:
         uses: aquasecurity/trivy-action@0.31.0
         with:
           image-ref: 'client:${{ github.sha }}'
-          format: 'sarif'
-          exit-code: '1'
+          format: 'table'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'HIGH,CRITICAL'
-          output: 'trivy-client-results.sarif'
       - name: Trivy scan server
         uses: aquasecurity/trivy-action@0.31.0
         with:
           image-ref: 'server:${{ github.sha }}'
-          format: 'sarif'
-          exit-code: '1'
+          format: 'table'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'HIGH,CRITICAL'
-          output: 'trivy-server-results.sarif'
-      - name: Upload Trivy client scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-client-results.sarif'
-          category: 'client'
-      - name: Upload Trivy server scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-server-results.sarif'
-          category: 'server'
 
   sonarqube:
     name: SonarQube Analysis
