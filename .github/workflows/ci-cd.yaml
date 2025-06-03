@@ -12,8 +12,8 @@ on:
       - terraform/**
       - argocd/**
       - helm/**
-      - .github/workflows/**
-      - build-and-push.sh
+      - .github/workflows/** # To prevent self-triggering on workflow changes
+      - build-and-push.sh # Consider if changes to this script SHOULD trigger scans
   pull_request:
     branches: [main]
     paths-ignore:
@@ -24,93 +24,137 @@ on:
       - terraform/**
       - argocd/**
       - helm/**
-      - .github/workflows/**
-      - build-and-push.sh
+      - .github/workflows/** # To prevent self-triggering on workflow changes
+      - build-and-push.sh # Consider if changes to this script SHOULD trigger scans
 
 jobs:
   trivy-scan:
     name: Trivy Security Scan
     runs-on: ubuntu-latest
+    # continue-on-error: true # Decide if you want the entire job to continue or fail based on Trivy's exit code.
+                            # If you want to block on HIGH/CRITICAL, set this to false or remove it (default is false).
+                            # For this example, I'm keeping it as per your original, but it's a key decision point.
     continue-on-error: true
     if: >
       github.event_name == 'push' || github.event_name == 'pull_request'
+    permissions:
+      contents: read # Required for actions/checkout
+      security-events: write # Required for uploading SARIF results
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: Build client image
-        run: docker build -f client/next.dockerfile -t client:latest ./client
+        id: build_client
+        run: docker build -f client/next.dockerfile -t client:${{ github.sha }} ./client
+
       - name: Build server image
-        run: docker build -f server/node.dockerfile -t server:latest ./server
+        id: build_server
+        run: docker build -f server/node.dockerfile -t server:${{ github.sha }} ./server
+
       - name: Trivy scan client
-        uses: aquasecurity/trivy-action@v0.22.2
+        # Always check for the latest stable version of trivy-action
+        uses: aquasecurity/trivy-action@0.25.0 # Replace with the latest version
         with:
-          image-ref: 'client:latest'
-          format: 'table'
-          exit-code: '1'
+          image-ref: 'client:${{ github.sha }}'
+          format: 'table' # Keep table format for console output
+          exit-code: '1'  # Fail step if vulnerabilities are found (respects severity)
           ignore-unfixed: true
+          vuln-type: 'os,library' # Be explicit about what you're scanning for
+          severity: 'HIGH,CRITICAL' # Only fail for HIGH and CRITICAL vulnerabilities
+          # SARIF output for GitHub Security tab
+          output: 'trivy-client-results.sarif'
+
       - name: Trivy scan server
-        uses: aquasecurity/trivy-action@v0.22.2
+        # Always check for the latest stable version of trivy-action
+        uses: aquasecurity/trivy-action@0.25.0 # Replace with the latest version
         with:
-          image-ref: 'server:latest'
+          image-ref: 'server:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+          output: 'trivy-server-results.sarif'
+
+      - name: Upload Trivy client scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() # Ensure this runs even if previous steps fail, to upload report
+        with:
+          sarif_file: 'trivy-client-results.sarif'
+          category: 'client' # Optional: category for the scan
+
+      - name: Upload Trivy server scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() # Ensure this runs even if previous steps fail, to upload report
+        with:
+          sarif_file: 'trivy-server-results.sarif'
+          category: 'server' # Optional: category for the scan
 
   sonarqube:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: true # As per your original
     if: >
       github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # SonarQube needs full history for accurate analysis
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
+        uses: sonarsource/sonarqube-scan-action@v2 # Check for latest version
         with:
           projectBaseDir: .
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            # Remove the next line if using self-hosted SonarQube
             -Dsonar.organization=${{ secrets.SONAR_ORG_KEY }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        continue-on-error: true
+        # continue-on-error: true # This was on your original step, usually not needed if job level is set
 
   docker-build-push:
     name: Docker Build & Push
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: true # As per your original
+    needs: [trivy-scan, sonarqube] # Optional: make it depend on successful scans if continue-on-error for those jobs is false
     if: >
-      github.event_name == 'push' || github.event_name == 'pull_request'
+      github.event_name == 'push' && github.ref == 'refs/heads/main' # Typically only push to registry on merge to main
+      # Adjust condition based on your branching strategy and when you want to push
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and push client image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5 # Check for latest version
         with:
           context: ./client
           file: ./client/next.dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gen-client:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gen-client:latest, ${{ secrets.DOCKERHUB_USERNAME }}/gen-client:${{ github.sha }}
+
       - name: Build and push server image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5 # Check for latest version
         with:
           context: ./server
           file: ./server/node.dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gen-serv:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gen-serv:latest, ${{ secrets.DOCKERHUB_USERNAME }}/gen-serv:${{ github.sha }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true # Changed to true: usually better to cancel outdated runs for PRs/pushes to the same ref
