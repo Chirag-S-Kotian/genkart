@@ -42,6 +42,7 @@
   - [ArgoCD GitOps](#argocd-gitops)
   - [Secret Management](#secret-management)
   - [CI/CD & Quality](#ci-cd--quality)
+- [DevOps Versioning & Cloud Deployments](#devops-versioning--cloud-deployments)
 - [DevSecOps Deployment Architecture](#devsecops-deployment-architecture)
 - [Developer & DevOps Commands](#developer--devops-commands)
 - [Troubleshooting](#troubleshooting)
@@ -240,6 +241,15 @@ npm run dev
 - **Trivy**: Container image vulnerability scanning in CI.
 - **SonarQube**: Code quality and security analysis in CI.
 - **Release Versioning**: Automated Helm chart and Docker tag versioning on main branch push.
+
+---
+
+## DevOps Versioning & Cloud Deployments
+
+- **Automated versioning and Helm chart updates only occur on production (cloud) deployments.**
+- To trigger a version bump and update Docker/Helm tags, use the GitHub Actions workflow: **Release Versioning** → _Run workflow_ → set `environment` to `cloud`.
+- Local/dev deployments and regular pushes do **not** change the version or Helm chart tags.
+- This ensures version numbers only advance for production releases, keeping development and staging clean.
 
 ---
 
