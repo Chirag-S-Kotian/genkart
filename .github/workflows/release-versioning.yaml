@@ -2,19 +2,12 @@
 name: Automated Versioning & Tagging
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - LICENSE
-      - README.md
-      - readme-assets/**
-      - .gitignore
-      - terraform/**
-      - argocd/**
-      - helm/**
-      - .github/workflows/**
-      - build-and-push.sh
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (must be "cloud" for version bump)'
+        required: true
+        default: 'cloud'
 
 jobs:
   version-and-tag:
@@ -22,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    if: ${{ github.event.inputs.environment == 'cloud' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
