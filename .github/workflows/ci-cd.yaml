@@ -12,7 +12,6 @@ on:
       - argocd/**
       - helm/**
       - .github/workflows/**
-      - build-and-push.sh
   pull_request:
     branches: [main]
     paths-ignore:
@@ -24,7 +23,6 @@ on:
       - argocd/**
       - helm/**
       - .github/workflows/**
-      - build-and-push.sh
 
 jobs:
   trivy-scan:
@@ -48,7 +46,7 @@ jobs:
         id: build_server
         run: docker build -f server/node.dockerfile -t server:${{ github.sha }} ./server
       - name: Trivy scan client
-        uses: aquasecurity/trivy-action@0.25.0
+        uses: aquasecurity/trivy-action@0.31.0
         with:
           image-ref: 'client:${{ github.sha }}'
           format: 'table'
@@ -58,7 +56,7 @@ jobs:
           severity: 'HIGH,CRITICAL'
           output: 'trivy-client-results.sarif'
       - name: Trivy scan server
-        uses: aquasecurity/trivy-action@0.25.0
+        uses: aquasecurity/trivy-action@0.31.0
         with:
           image-ref: 'server:${{ github.sha }}'
           format: 'table'
