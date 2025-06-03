@@ -49,18 +49,18 @@ resource "google_compute_router" "genkart_router" {
 }
 
 resource "google_compute_router_nat" "genkart_nat" {
-  name                               = "genkart-nat"
-  router                             = google_compute_router.genkart_router.name
-  region                             = var.region
-  nat_ip_allocate_option             = "AUTO_ONLY"
-  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  name                                = "genkart-nat"
+  router                              = google_compute_router.genkart_router.name
+  region                              = var.region
+  nat_ip_allocate_option              = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat  = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   enable_endpoint_independent_mapping = true
 }
 
 # Create a GKE cluster with advanced security and networking
 resource "google_container_cluster" "genkart_gke" {
-  name     = "genkart-gke"
-  location = var.region
+  name       = "genkart-gke"
+  location   = var.region
   network    = google_compute_network.genkart_vpc.id
   subnetwork = google_compute_subnetwork.genkart_subnet.id
 
@@ -116,9 +116,9 @@ resource "google_container_cluster" "genkart_gke" {
 
 # Create a node pool for the cluster with autoscaling and security
 resource "google_container_node_pool" "genkart_nodes" {
-  name       = "genkart-node-pool"
-  cluster    = google_container_cluster.genkart_gke.name
-  location   = var.region
+  name     = "genkart-node-pool"
+  cluster  = google_container_cluster.genkart_gke.name
+  location = var.region
 
   node_count = var.node_count
 
@@ -232,6 +232,19 @@ resource "google_compute_firewall" "genkart-allow-argocd" {
   allow {
     protocol = "tcp"
     ports    = ["8080"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["genkart-node"]
+}
+
+# Firewall rule for SonarQube (port 9000)
+resource "google_compute_firewall" "genkart-allow-sonarqube" {
+  name    = "genkart-allow-sonarqube"
+  network = google_compute_network.genkart_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["9000"]
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
