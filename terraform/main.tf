@@ -4,11 +4,20 @@ provider "google" {
   region  = var.region
 }
 
+# QUOTA OPTIMIZATION NOTES:
+# - Using pd-standard disks instead of pd-ssd to avoid SSD quota limits
+# - Disk size reduced to 50GB per node (minimum recommended is 10GB)
+# - Max nodes reduced to 3 to stay within quota limits
+# - For production, consider requesting quota increases for:
+#   - SSD_TOTAL_GB (if you need SSD performance)
+#   - PERSISTENT_DISK_SSD_TOTAL_GB
+#   - Visit: https://console.cloud.google.com/iam-admin/quotas
+
 # Enable required Google APIs
 resource "google_project_service" "container" {
   project = var.project_id
   service = "container.googleapis.com"
-  
+
   # This allows Terraform to disable the service when destroying
   disable_on_destroy = true
   # This allows disabling services that have dependencies
@@ -18,7 +27,7 @@ resource "google_project_service" "container" {
 resource "google_project_service" "compute" {
   project = var.project_id
   service = "compute.googleapis.com"
-  
+
   # This allows Terraform to disable the service when destroying
   disable_on_destroy = true
   # This allows disabling services that have dependencies
@@ -29,15 +38,15 @@ resource "google_project_service" "compute" {
 resource "google_project_service" "serviceusage" {
   project = var.project_id
   service = "serviceusage.googleapis.com"
-  
-  disable_on_destroy = false  # Usually should not be disabled
+
+  disable_on_destroy = false # Usually should not be disabled
 }
 
 # Create a custom VPC for GKE
 resource "google_compute_network" "genkart_vpc" {
   name                    = "genkart-vpc"
   auto_create_subnetworks = false
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -60,7 +69,7 @@ resource "google_compute_subnetwork" "genkart_subnet" {
     range_name    = "genkart-services"
     ip_cidr_range = "10.30.0.0/20"
   }
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -69,7 +78,7 @@ resource "google_compute_router" "genkart_router" {
   name    = "genkart-router"
   network = google_compute_network.genkart_vpc.id
   region  = var.region
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -80,7 +89,7 @@ resource "google_compute_router_nat" "genkart_nat" {
   nat_ip_allocate_option              = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat  = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   enable_endpoint_independent_mapping = true
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -139,7 +148,7 @@ resource "google_container_cluster" "genkart_gke" {
   #   enable_private_endpoint = false
   #   master_ipv4_cidr_block  = "172.16.0.0/28"
   # }
-  
+
   depends_on = [
     google_project_service.container,
     google_project_service.compute
@@ -152,15 +161,20 @@ resource "google_container_node_pool" "genkart_nodes" {
   cluster  = google_container_cluster.genkart_gke.name
   location = var.region
 
-  node_count = var.node_count
+  node_count = 1 # Start with 1 node instead of var.node_count
 
   autoscaling {
     min_node_count = 1
-    max_node_count = 5
+    max_node_count = 3 # Reduced from 5 to 3 to stay within quota
   }
 
   node_config {
     machine_type = var.node_machine_type
+
+    # Disk configuration to stay within quota limits
+    disk_size_gb = 50            # Reduced from default 100GB to 50GB per node
+    disk_type    = "pd-standard" # Use standard disks instead of SSD
+
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
@@ -178,7 +192,7 @@ resource "google_container_node_pool" "genkart_nodes" {
       disable-legacy-endpoints = "true"
     }
   }
-  
+
   depends_on = [
     google_project_service.container,
     google_project_service.compute
@@ -202,7 +216,7 @@ resource "google_compute_firewall" "genkart-allow-internal" {
     protocol = "icmp"
   }
   source_ranges = ["10.10.0.0/16", "10.20.0.0/16"]
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -217,7 +231,7 @@ resource "google_compute_firewall" "genkart-allow-nodeports" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -231,7 +245,7 @@ resource "google_compute_firewall" "genkart-allow-health-checks" {
     ports    = ["80", "443"]
   }
   source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -239,7 +253,7 @@ resource "google_compute_firewall" "genkart-allow-health-checks" {
 resource "google_compute_address" "genkart_ingress_ip" {
   name   = "genkart-ingress-ip"
   region = var.region
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -254,7 +268,7 @@ resource "google_compute_firewall" "genkart-allow-client" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -269,7 +283,7 @@ resource "google_compute_firewall" "genkart-allow-server" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -284,7 +298,7 @@ resource "google_compute_firewall" "genkart-allow-argocd" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
-  
+
   depends_on = [google_project_service.compute]
 }
 
@@ -299,6 +313,6 @@ resource "google_compute_firewall" "genkart-allow-sonarqube" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
-  
+
   depends_on = [google_project_service.compute]
 }
