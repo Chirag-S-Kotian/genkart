@@ -29,6 +29,12 @@ resource "google_compute_subnetwork" "genkart_subnet" {
   network       = google_compute_network.genkart_vpc.id
   # Enable Private Google Access for GKE nodes
   private_ip_google_access = true
+
+  # Secondary range for services
+  secondary_ip_range {
+    range_name    = "genkart-services"
+    ip_cidr_range = "10.30.0.0/20"
+  }
 }
 
 # Create a secondary subnet for GKE pods (required for VPC-native clusters)
@@ -39,6 +45,12 @@ resource "google_compute_subnetwork" "genkart_pod_subnet" {
   network       = google_compute_network.genkart_vpc.id
   purpose       = "PRIVATE"
   role          = "ACTIVE"
+
+  # Secondary range for pods
+  secondary_ip_range {
+    range_name    = "genkart-pods"
+    ip_cidr_range = "10.40.0.0/14"
+  }
 }
 
 # Create a NAT gateway for outbound internet access from private nodes
@@ -68,8 +80,8 @@ resource "google_container_cluster" "genkart_gke" {
   initial_node_count       = 1
 
   ip_allocation_policy {
-    cluster_secondary_range_name  = google_compute_subnetwork.genkart_pod_subnet.name
-    services_secondary_range_name = google_compute_subnetwork.genkart_subnet.name
+    cluster_secondary_range_name  = "genkart-pods"
+    services_secondary_range_name = "genkart-services"
   }
 
   # Enable shielded nodes for security
