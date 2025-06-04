@@ -8,17 +8,37 @@ provider "google" {
 resource "google_project_service" "container" {
   project = var.project_id
   service = "container.googleapis.com"
+  
+  # This allows Terraform to disable the service when destroying
+  disable_on_destroy = true
+  # This allows disabling services that have dependencies
+  disable_dependent_services = true
 }
 
 resource "google_project_service" "compute" {
   project = var.project_id
   service = "compute.googleapis.com"
+  
+  # This allows Terraform to disable the service when destroying
+  disable_on_destroy = true
+  # This allows disabling services that have dependencies
+  disable_dependent_services = true
+}
+
+# Enable Service Usage API (often required for managing other APIs)
+resource "google_project_service" "serviceusage" {
+  project = var.project_id
+  service = "serviceusage.googleapis.com"
+  
+  disable_on_destroy = false  # Usually should not be disabled
 }
 
 # Create a custom VPC for GKE
 resource "google_compute_network" "genkart_vpc" {
   name                    = "genkart-vpc"
   auto_create_subnetworks = false
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Create a subnet for GKE (primary subnet for pods/services)
@@ -40,6 +60,8 @@ resource "google_compute_subnetwork" "genkart_subnet" {
     range_name    = "genkart-services"
     ip_cidr_range = "10.30.0.0/20"
   }
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Create a NAT gateway for outbound internet access from private nodes
@@ -47,6 +69,8 @@ resource "google_compute_router" "genkart_router" {
   name    = "genkart-router"
   network = google_compute_network.genkart_vpc.id
   region  = var.region
+  
+  depends_on = [google_project_service.compute]
 }
 
 resource "google_compute_router_nat" "genkart_nat" {
@@ -56,6 +80,8 @@ resource "google_compute_router_nat" "genkart_nat" {
   nat_ip_allocate_option              = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat  = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   enable_endpoint_independent_mapping = true
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Create a GKE cluster with advanced security and networking
@@ -113,6 +139,11 @@ resource "google_container_cluster" "genkart_gke" {
   #   enable_private_endpoint = false
   #   master_ipv4_cidr_block  = "172.16.0.0/28"
   # }
+  
+  depends_on = [
+    google_project_service.container,
+    google_project_service.compute
+  ]
 }
 
 # Create a node pool for the cluster with autoscaling and security
@@ -147,6 +178,11 @@ resource "google_container_node_pool" "genkart_nodes" {
       disable-legacy-endpoints = "true"
     }
   }
+  
+  depends_on = [
+    google_project_service.container,
+    google_project_service.compute
+  ]
 }
 
 # Firewall rule for internal communication
@@ -166,6 +202,8 @@ resource "google_compute_firewall" "genkart-allow-internal" {
     protocol = "icmp"
   }
   source_ranges = ["10.10.0.0/16", "10.20.0.0/16"]
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Firewall rule for node ports (for debugging/ingress)
@@ -179,6 +217,8 @@ resource "google_compute_firewall" "genkart-allow-nodeports" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Firewall rule for health checks
@@ -191,12 +231,16 @@ resource "google_compute_firewall" "genkart-allow-health-checks" {
     ports    = ["80", "443"]
   }
   source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Reserve a static IP for the GKE ingress (for stable DNS and HTTPS)
 resource "google_compute_address" "genkart_ingress_ip" {
   name   = "genkart-ingress-ip"
   region = var.region
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Firewall rule for frontend (client) service (port 3000)
@@ -210,6 +254,8 @@ resource "google_compute_firewall" "genkart-allow-client" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Firewall rule for backend (server) service (port 5555)
@@ -223,6 +269,8 @@ resource "google_compute_firewall" "genkart-allow-server" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Firewall rule for ArgoCD UI (port 8080)
@@ -236,6 +284,8 @@ resource "google_compute_firewall" "genkart-allow-argocd" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
+  
+  depends_on = [google_project_service.compute]
 }
 
 # Firewall rule for SonarQube (port 9000)
@@ -249,4 +299,6 @@ resource "google_compute_firewall" "genkart-allow-sonarqube" {
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["genkart-node"]
+  
+  depends_on = [google_project_service.compute]
 }
