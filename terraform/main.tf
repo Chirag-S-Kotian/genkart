@@ -30,26 +30,15 @@ resource "google_compute_subnetwork" "genkart_subnet" {
   # Enable Private Google Access for GKE nodes
   private_ip_google_access = true
 
+  # Secondary range for pods
+  secondary_ip_range {
+    range_name    = "genkart-pods"
+    ip_cidr_range = "10.20.0.0/16"
+  }
   # Secondary range for services
   secondary_ip_range {
     range_name    = "genkart-services"
     ip_cidr_range = "10.30.0.0/20"
-  }
-}
-
-# Create a secondary subnet for GKE pods (required for VPC-native clusters)
-resource "google_compute_subnetwork" "genkart_pod_subnet" {
-  name          = "genkart-pod-subnet"
-  ip_cidr_range = "10.20.0.0/16"
-  region        = var.region
-  network       = google_compute_network.genkart_vpc.id
-  purpose       = "PRIVATE"
-  role          = "ACTIVE"
-
-  # Secondary range for pods
-  secondary_ip_range {
-    range_name    = "genkart-pods"
-    ip_cidr_range = "10.40.0.0/14"
   }
 }
 
