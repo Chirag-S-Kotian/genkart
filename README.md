@@ -244,6 +244,17 @@ npm run dev
 
 ---
 
+## 🌟 What's New (2025)
+
+- **GCP Firewall:** SonarQube (port 9000) is now open for secure access in GKE deployments.
+- **Versioning:** Automated versioning and Helm chart updates now only occur on production (cloud) deployments via GitHub Actions workflow dispatch.
+- **Security:** All secrets are managed via GitHub Actions secrets, Kubernetes secrets, or external secret managers. No secrets are committed to Git.
+- **CI/CD:** Trivy and SonarQube scans are integrated and run on every push/PR. Docker images are built and pushed only on main branch pushes.
+- **Terraform:** Infrastructure as code provisions GKE, VPC, subnets, firewall rules (including SonarQube), static IP, and more. See `terraform/README.md` for details.
+- **Developer Experience:** Improved onboarding, troubleshooting, and rollback documentation. See new sections below for details.
+
+---
+
 ## DevOps Versioning & Cloud Deployments
 
 - **Automated versioning and Helm chart updates only occur on production (cloud) deployments.**
