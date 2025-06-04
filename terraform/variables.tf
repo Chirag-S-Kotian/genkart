@@ -52,8 +52,8 @@ variable "node_disk_size_gb" {
   type        = number
   default     = 50
   validation {
-    condition     = var.node_disk_size_gb >= 50 && var.node_disk_size_gb <= 250
-    error_message = "Node disk size must be between 50GB and 250GB to stay within quota limits."
+    condition     = var.node_disk_size_gb >= 10 && var.node_disk_size_gb <= 100
+    error_message = "Node disk size must be between 50GB and 100GB to stay within quota limits."
   }
 }
 
