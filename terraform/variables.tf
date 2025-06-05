@@ -12,6 +12,11 @@ variable "region" {
   default     = "asia-south1"
 }
 
+variable "zone" {
+  description = "The zone to deploy resources"
+  default     = "us-central1-a"
+}
+
 variable "node_count" {
   description = "Initial number of nodes in the node pool"
   type        = number
