@@ -80,6 +80,8 @@ resource "google_container_cluster" "genkart_gke" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
+  deletion_protection = false
+
   # ---- START: MODIFICATION TO FIX SSD QUOTA ISSUE ----
   # This node_config applies to the temporary default node pool GKE creates
   # before removing it (due to remove_default_node_pool = true).
