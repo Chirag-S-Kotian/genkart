@@ -1,22 +1,23 @@
-# Default values for Genkart Helm chart.
+# values.yaml
+
 replicaCount: 2
 
 image:
   client:
     repository: chirag117/gen-client
-    tag: 'v0.0.4'
+    tag: 'v1'
     pullPolicy: IfNotPresent
   server:
     repository: chirag117/gen-serv
-    tag: 'v0.0.4'
+    tag: 'v1'
     pullPolicy: IfNotPresent
 
 service:
   client:
-    type: ClusterIP
+    type: LoadBalancer
     port: 3000
   server:
-    type: ClusterIP
+    type: ClusterIP   # Server can remain ClusterIP, client will talk to it internally
     port: 5555
 
 resources:
@@ -36,14 +37,14 @@ resources:
       memory: 512Mi
 
 ingress:
-  enabled: true
-  className: nginx
-  host: genkart.com
-  tls:
-    enabled: true
-    secretName: genkart-tls
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  enabled: false # <--- CHANGE THIS TO DISABLE INGRESS
+  # className: "nginx"
+  # host: "genkart.com"
+  # tls:
+  #   secretName: "genkart-tls"
+  # annotations:
+  #   kubernetes.io/ingress.class: "nginx"
+  #   cert-manager.io/cluster-issuer: "letsencrypt-prod"
 
 # Example secrets (base64-encoded, override via --set or values-secret.yaml)
 secrets:
