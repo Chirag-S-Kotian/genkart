@@ -7,14 +7,15 @@ resource "google_project_service" "container" {
   project = var.project_id
   service = "container.googleapis.com"
 
-  disable_on_destroy = true
+  disable_on_destroy         = true
   disable_dependent_services = true
 }
 
 resource "google_project_service" "compute" {
   project = var.project_id
   service = "compute.googleapis.com"
-  disable_on_destroy = true
+
+  disable_on_destroy         = true
   disable_dependent_services = true
 }
 
@@ -33,10 +34,10 @@ resource "google_compute_network" "genkart_vpc" {
 }
 
 resource "google_compute_subnetwork" "genkart_subnet" {
-  name          = "genkart-subnet"
-  ip_cidr_range = "10.10.0.0/16"
-  region        = var.region
-  network       = google_compute_network.genkart_vpc.id
+  name                     = "genkart-subnet"
+  ip_cidr_range            = "10.10.0.0/16"
+  region                   = var.region
+  network                  = google_compute_network.genkart_vpc.id
   private_ip_google_access = true
 
   secondary_ip_range {
@@ -78,6 +79,17 @@ resource "google_container_cluster" "genkart_gke" {
 
   remove_default_node_pool = true
   initial_node_count       = 1
+
+  # ---- START: MODIFICATION TO FIX SSD QUOTA ISSUE ----
+  # This node_config applies to the temporary default node pool GKE creates
+  # before removing it (due to remove_default_node_pool = true).
+  # We force it to use pd-standard to avoid hitting SSD quotas.
+  node_config {
+    disk_type    = "pd-standard"
+    disk_size_gb = 30 # Minimum is usually 10GB for COS, 30GB is a safe small size.
+    # machine_type = "e2-small" # Optional: specify a small machine type too
+  }
+  # ---- END: MODIFICATION TO FIX SSD QUOTA ISSUE ----
 
   ip_allocation_policy {
     cluster_secondary_range_name  = "genkart-pods"
@@ -133,8 +145,8 @@ resource "google_container_node_pool" "genkart_nodes" {
   node_config {
     machine_type = var.node_machine_type
     disk_size_gb = 50
-    disk_type    = "pd-standard"
-    image_type   = "COS_CONTAINERD" # ✅ Recommended by Google for GKE
+    disk_type    = "pd-standard" # This node pool correctly uses pd-standard
+    image_type   = "COS_CONTAINERD"
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
@@ -180,7 +192,7 @@ resource "google_compute_firewall" "genkart-allow-internal" {
   allow {
     protocol = "icmp"
   }
-  source_ranges = ["10.10.0.0/16", "10.20.0.0/16"]
+  source_ranges = ["10.10.0.0/16", "10.20.0.0/16"] // Pod CIDR also included
 
   depends_on = [google_project_service.compute]
 }
@@ -205,9 +217,9 @@ resource "google_compute_firewall" "genkart-allow-health-checks" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80", "443"]
+    ports    = ["80", "443"] // Common ports for health checks, adjust if needed
   }
-  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"] // Google Health Checker ranges
 
   depends_on = [google_project_service.compute]
 }
