@@ -1,6 +1,6 @@
 #!/bin/zsh
-# Script to deploy ArgoCD and Genkart app to GKE using Helm and secrets
-# Usage: ./deploy-argocd.sh <GCP_PROJECT> <GKE_CLUSTER_NAME> <GKE_REGION>
+# Script to deploy Genkart app to GKE using Helm only (no ArgoCD)
+# Usage: ./deploy-helm.sh <GCP_PROJECT> <GKE_CLUSTER_NAME> <GKE_REGION>
 
 set -e
 
@@ -22,109 +22,21 @@ for tool in gcloud kubectl helm; do
   echo "[CHECK] $tool is installed."
 done
 
-# Ensure step variable is always incremented and echoed
 STEP=1
 echo "\n[STEP $STEP] Authenticating to GKE..."
-if ! kubectl config get-contexts | grep -q "$GKE_CLUSTER_NAME"; then
-  gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION" --project "$GCP_PROJECT"
-else
-  echo "[INFO] GKE context already set. Skipping authentication."
-fi
+gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION" --project "$GCP_PROJECT"
 
 STEP=$((STEP+1))
-echo "\n[STEP $STEP] Ensuring 'argocd' namespace exists..."
-if ! kubectl get ns argocd >/dev/null 2>&1; then
-  kubectl create namespace argocd
-else
-  echo "[INFO] Namespace 'argocd' already exists. Skipping."
-fi
+echo "\n[STEP $STEP] Ensuring 'default' namespace exists..."
+kubectl get ns default >/dev/null 2>&1 || kubectl create namespace default
 
 STEP=$((STEP+1))
-echo "\n[STEP $STEP] Adding/Updating ArgoCD Helm repo..."
-if ! helm repo list | grep -q "argo"; then
-  helm repo add argo https://argoproj.github.io/argo-helm
-fi
+echo "\n[STEP $STEP] Adding/Updating Helm repo (if needed)..."
+# If you use a custom chart repo, add it here. For local charts, this is not needed.
 helm repo update
 
 STEP=$((STEP+1))
-echo "\n[STEP $STEP] Checking for existing ArgoCD resources not managed by Helm..."
-ARGOCD_HELM_RELEASE_EXISTS=$(helm -n argocd list | grep -c "argocd")
-ARGOCD_K8S_RESOURCES_EXIST=$(kubectl get sa -n argocd argocd-application-controller --no-headers 2>/dev/null | wc -l)
-if [ "$ARGOCD_HELM_RELEASE_EXISTS" -eq 0 ] && [ "$ARGOCD_K8S_RESOURCES_EXIST" -gt 0 ]; then
-  echo "[WARN] ArgoCD resources exist in namespace 'argocd' but are not managed by Helm."
-  echo "This can happen if you previously installed ArgoCD using kubectl apply."
-  read "_CONFIRM?Do you want to delete all ArgoCD resources in 'argocd' and reinstall with Helm? (y/N): "
-  if [[ $_CONFIRM =~ ^[Yy]$ ]]; then
-    echo "Deleting all ArgoCD resources in 'argocd' namespace..."
-    kubectl delete all,cm,secret,sa,role,rolebinding,svc,deploy,sts,rs,po -l app.kubernetes.io/part-of=argocd -n argocd || true
-    sleep 5
-  else
-    echo "Aborting. Please clean up the namespace manually or use Helm to install only on a clean namespace."
-    exit 10
-  fi
-fi
-
-STEP=$((STEP+1))
-echo "\n[STEP $STEP] Installing ArgoCD via Helm if not already installed..."
-if ! helm -n argocd list | grep -q "argocd"; then
-  helm upgrade --install argocd argo/argo-cd --namespace argocd --set server.service.type=LoadBalancer
-else
-  echo "[INFO] ArgoCD already installed in namespace 'argocd'. Skipping Helm install."
-fi
-
-STEP=$((STEP+1))
-echo "\n[STEP $STEP] Waiting for ArgoCD server to be ready..."
-if ! kubectl get deploy -n argocd argocd-server >/dev/null 2>&1; then
-  echo "[ERROR] ArgoCD server deployment not found!"
-  exit 2
-fi
-kubectl rollout status deployment/argocd-server -n argocd --timeout=300s
-
-STEP=$((STEP+1))
-echo "\n[STEP $STEP] Waiting for ArgoCD LoadBalancer IP..."
-for i in {1..30}; do
-  ARGOCD_LB_IP=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  if [ -n "$ARGOCD_LB_IP" ]; then
-    break
-  fi
-  sleep 10
-done
-if [ -z "$ARGOCD_LB_IP" ]; then
-  echo "[ERROR] ArgoCD LoadBalancer IP not assigned."
-  exit 3
-fi
-echo "[INFO] ArgoCD UI: http://$ARGOCD_LB_IP:80"
-
-STEP=$((STEP+1))
-echo "\n[STEP $STEP] Registering Genkart app with ArgoCD if not already registered..."
-if ! kubectl get application -n argocd genkart >/dev/null 2>&1; then
-  if [ -f "argocd/genkart-app.yaml" ]; then
-    kubectl apply -f argocd/genkart-app.yaml
-  else
-    echo "[ERROR] argocd/genkart-app.yaml not found!"
-    exit 4
-  fi
-else
-  echo "[INFO] Genkart app already registered with ArgoCD. Skipping."
-fi
-
-STEP=$((STEP+1))
-echo "\n[STEP $STEP] Deploying Helm chart (with secrets) if not already deployed..."
-if [ -f "helm/values-secret.yaml" ]; then
-  if ! helm -n default list | grep -q "genkart"; then
-    helm upgrade --install genkart ./helm -f helm/values.yaml -f helm/values-secret.yaml --namespace default --create-namespace
-    echo "[INFO] Listing created secrets in 'default' namespace:"
-    kubectl get secrets -n default | grep genkart || true
-  else
-    echo "[INFO] Genkart Helm release already exists in 'default' namespace. Skipping Helm deploy."
-  fi
-else
-  echo "[ERROR] helm/values-secret.yaml not found! Please create this file with your secret values before deploying."
-  exit 5
-fi
-
-STEP=$((STEP+1))
-echo "\n[STEP $STEP] Deploying client and server secrets (if not managed by Helm)..."
+echo "\n[STEP $STEP] Deploying client and server secrets (if present)..."
 if [ -f "helm/templates/client-secret.yaml" ]; then
   if ! kubectl get secret genkart-client-secrets -n default >/dev/null 2>&1; then
     kubectl apply -f helm/templates/client-secret.yaml -n default
@@ -143,12 +55,59 @@ if [ -f "helm/templates/server-secret.yaml" ]; then
 fi
 
 STEP=$((STEP+1))
-echo "\n[STEP $STEP] Deployment complete!"
-echo "ArgoCD UI: http://$ARGOCD_LB_IP:80"
-echo "To get ArgoCD admin password:"
-echo "  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo"
-echo "To port-forward (if no external IP):"
-echo "  kubectl port-forward svc/argocd-server -n argocd 8080:443"
-echo "To access your app, check your GKE LoadBalancer IPs."
+echo "\n[STEP $STEP] Checking for pre-existing secrets that block Helm install..."
+for secret in genkart-client-secrets genkart-server-secrets; do
+  if kubectl get secret $secret -n default >/dev/null 2>&1; then
+    # Check if managed by Helm
+    MANAGED_BY=$(kubectl get secret $secret -n default -o jsonpath='{.metadata.labels.app\.kubernetes\.io/managed-by}' 2>/dev/null)
+    if [ "$MANAGED_BY" != "Helm" ]; then
+      echo "[WARN] Secret '$secret' exists in 'default' namespace and is not managed by Helm."
+      echo "Deleting '$secret' so Helm can manage it."
+      kubectl delete secret $secret -n default
+    fi
+  fi
+done
 
-exit 0
+STEP=$((STEP+1))
+echo "\n[STEP $STEP] Deploying Genkart app using Helm..."
+if [ -f "helm/values-secret.yaml" ]; then
+  if ! helm -n default list | grep -q "genkart"; then
+    helm upgrade --install genkart ./helm -f helm/values.yaml -f helm/values-secret.yaml --namespace default --create-namespace
+    echo "[INFO] Genkart app deployed via Helm (with secrets)."
+  else
+    echo "[INFO] Genkart Helm release already exists in 'default' namespace. Upgrading..."
+    helm upgrade genkart ./helm -f helm/values.yaml -f helm/values-secret.yaml --namespace default
+  fi
+else
+  echo "[WARN] helm/values-secret.yaml not found. Deploying without secrets file."
+  if ! helm -n default list | grep -q "genkart"; then
+    helm upgrade --install genkart ./helm -f helm/values.yaml --namespace default --create-namespace
+    echo "[INFO] Genkart app deployed via Helm (without secrets)."
+  else
+    echo "[INFO] Genkart Helm release already exists in 'default' namespace. Upgrading..."
+    helm upgrade genkart ./helm -f helm/values.yaml --namespace default
+  fi
+fi
+
+STEP=$((STEP+1))
+echo "\n[STEP $STEP] Waiting for client LoadBalancer IP..."
+for i in {1..30}; do
+  CLIENT_LB_IP=$(kubectl get svc genkart-client -n default -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+  if [ -n "$CLIENT_LB_IP" ]; then
+    break
+  fi
+  sleep 10
+done
+if [ -z "$CLIENT_LB_IP" ]; then
+  echo "[WARN] Client LoadBalancer IP not assigned yet. Check with: kubectl get svc genkart-client -n default"
+else
+  echo "[INFO] Genkart Client UI: http://$CLIENT_LB_IP:3000"
+fi
+
+STEP=$((STEP+1))
+echo "\n[STEP $STEP] Deployment complete!"
+echo "To check status: kubectl get all -n default"
+echo "To get client LoadBalancer IP: kubectl get svc genkart-client -n default"
+echo "To get server service: kubectl get svc genkart-server -n default"
+
+echo "\n[INFO] Done."
