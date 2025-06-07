@@ -1,5 +1,5 @@
 ﻿<!-- Badges -->
-<p align="center>
+<p align="center">
   <img src="https://img.shields.io/badge/Docker-ready-blue?logo=docker" alt="Docker"/>
   <img src="https://img.shields.io/badge/Kubernetes-ready-blue?logo=kubernetes" alt="Kubernetes"/>
   <img src="https://img.shields.io/badge/Helm-ready-blue?logo=helm" alt="Helm"/>
@@ -282,7 +282,6 @@ npm run dev
 - **Secret Management:** K8s Secrets for dev, with support for Sealed Secrets/External Secrets for production.
 - **Monitoring & Security:**
   - Trivy scans images for vulnerabilities in CI.
-  - SonarQube analyzes code quality and security.
   - GKE network policies, shielded nodes, and firewall rules enforce runtime security.
 
 ---
@@ -318,7 +317,6 @@ npm run dev
 ## 🛡️ Troubleshooting
 - **Pods stuck in `CreateContainerConfigError`?**
   - Check if secrets exist: `kubectl get secrets`
-  - Check pod logs: `kubectl logs <pod>`
   - Describe pod: `kubectl describe pod <pod>`
 - **ArgoCD app out of sync?**
   - Sync manually in UI or with `kubectl`.
