@@ -10,7 +10,6 @@
   <img src="https://img.shields.io/badge/Security%20Scan-Trivy-critical?logo=trivy" alt="Trivy"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
 </p>
-[![CI/CD Pipeline](https://github.com/Chirag-S-Kotian/genkart/actions/workflows/ci-cd.yaml/badge.svg)](https://github.com/Chirag-S-Kotian/genkart/actions/workflows/ci-cd.yaml)
 
 # Genkart-Ecommerce
 
@@ -25,60 +24,51 @@
 
 ---
 
-## 📚 Table of Contents
+Genkart is a modern, full-stack e-commerce platform built for learning, demo, and real-world DevSecOps. It features a Next.js frontend, Node.js/Express backend, MongoDB Atlas, and a complete GitOps/DevOps pipeline with Docker, Kubernetes, Helm, ArgoCD, GCP (GKE), and Terraform.
+
+---
+
+## Table of Contents
 - [Overview](#overview)
 - [Tech Stack](#tech-stack)
 - [Key Features](#key-features)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-  - [Requirements](#requirements)
-  - [Clone the Repository](#clone-the-repository)
-  - [Environment Variables](#environment-variables)
-  - [Local Development](#local-development)
 - [DevOps & Deployment](#devops--deployment)
-  - [Docker & Docker Compose](#docker--docker-compose)
-  - [Kubernetes](#kubernetes)
-  - [Helm](#helm)
-  - [ArgoCD GitOps](#argocd-gitops)
-  - [Secret Management](#secret-management)
-  - [CI/CD & Quality](#ci-cd--quality)
-- [DevOps Versioning & Cloud Deployments](#devops-versioning--cloud-deployments)
-- [DevSecOps Deployment Architecture](#devsecops-deployment-architecture)
-- [Developer & DevOps Commands](#developer--devops-commands)
-- [Troubleshooting](#troubleshooting)
 - [Admin Account Setup](#admin-account-setup)
+- [Admin Login](#admin-login)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
 
 ---
 
-## 📝 Overview
-Genkart is a modern, full-stack e-commerce platform built for learning, demo, and real-world DevSecOps. It features a Next.js frontend, Node.js/Express backend, MongoDB Atlas, and a complete GitOps/DevOps pipeline with Docker, Kubernetes, Helm, ArgoCD, GCP (GKE), and Terraform. The project is designed for developer experience, security, and production-readiness.
+## Overview
+Genkart is a production-ready e-commerce platform with a focus on DevSecOps best practices, automation, and developer experience.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 - **Frontend:** Next.js (React)
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB Atlas
-- **Styling:** Tailwind CSS, Material UI, Material Tailwind
+- **Styling:** Tailwind CSS, Material UI
 - **Image Management:** Cloudinary
-- **DevOps:** Docker, Docker Compose, Kubernetes, Helm, ArgoCD, Terraform, GitHub Actions
+- **DevOps:** Docker, Kubernetes, Helm, ArgoCD, Terraform, GitHub Actions
 - **Security/Quality:** Trivy, SonarQube
 
 ---
 
-## ✨ Key Features
-- **Authentication & Authorization:** JWT-based, role-based (admin/customer)
-- **Product Management:** CRUD for products/categories, Cloudinary image storage
-- **User Profile:** Manage info, history, settings
-- **Admin Panel:** Secure dashboard for managing products, categories, users
-- **DevSecOps:** Automated CI/CD, security scanning, code quality, GitOps deployment
+## Key Features
+- JWT-based authentication (admin/customer)
+- Product/category CRUD, Cloudinary image storage
+- User profile management
+- Secure admin dashboard
+- Automated CI/CD, security scanning, code quality, GitOps deployment
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 ```
 Genkart/
 ├── client/           # Next.js frontend
@@ -87,304 +77,182 @@ Genkart/
 ├── k8s/              # Raw Kubernetes manifests
 ├── argocd/           # ArgoCD Application manifests
 ├── docker-compose.yaml
-├── build-and-push.sh
-├── README.md
-└── ...
+├── scripts/          # Deployment and automation scripts
+├── terraform/        # GCP infrastructure as code
+└── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Requirements
-- [Node.js](https://nodejs.org/en/download/package-manager)
-- [Git](https://git-scm.com/downloads)
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-- [Kubernetes (Minikube or other)](https://minikube.sigs.k8s.io/docs/)
-- [Helm](https://helm.sh/docs/intro/install/)
-- [ArgoCD](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+- Node.js, Git, Docker, Docker Compose
+- Kubernetes (Minikube or GKE), Helm, ArgoCD
+- Terraform (for GCP infra)
 
-### Clone the Repository
-```zsh
+### Clone & Setup
+```sh
 git clone https://github.com/Chirag-S-Kotian/genkart.git
 cd genkart
 ```
 
-### Environment Variables
-- Copy `.env` templates from `/client/.env.example` and `/server/.env.example` (or create your own as described below).
-- **Never commit secrets to Git!**
+## Environment Variables
 
-#### Example: `/client/.env`
-```env
-NEXT_PUBLIC_API='http://localhost:5000/api'
-NEXT_PUBLIC_CLIENT_URL='http://localhost:5000/'
-NEXT_PUBLIC_JWT_SECRET='adminfksnkzv'
-NEXT_PUBLIC_JWT_USER_SECRET='usernsdbdskvn'
-NEXT_PUBLIC_NODE_ENV='development'
+You must create the following environment variable files before running the app:
+
+### /client/.env
+```
+NEXT_PUBLIC_API=your_backend_api_url (e.g. http://localhost:5555/api or your production URL)
+NEXT_PUBLIC_CLIENT_URL=your_frontend_url (e.g. http://localhost:3000/ or your production URL)
+NEXT_PUBLIC_JWT_SECRET=your_jwt_secret
+NEXT_PUBLIC_JWT_USER_SECRET=your_jwt_user_secret
+NEXT_PUBLIC_NODE_ENV=development
 ```
 
-#### Example: `/server/.env`
-```env
-MONGO_DB_URI="mongodb+srv://username:password@project.wvpqroq.mongodb.net/genkartv"
-EMAIL_USER="genriotesting@gmail.com"
-EMAIL_PASS="vivh ztpd snny zjda"
-CLIENT_URL="http://localhost:3000"
-NODE_ENV="production"
-CLOUDINARY_CLOUD_NAME=""
-CLOUDINARY_API_KEY=""
-CLOUDINARY_API_SECRET=""
-CLOUDINARY_FOLDER_NAME="Genkartv2"
-JWT_SECRET="adminfksnkzv"
-JWT_USER_SECRET="usernsdbdskvn"
-JWT_EXPIRES_IN="1d"
+### /server/.env
 ```
+MONGO_URI=your_mongodb_connection_string
+EMAIL_USER=your_email_address
+EMAIL_PASS=your_email_password
+CLIENT_URL=your_frontend_url (e.g. http://localhost:3000 or your production URL)
+NODE_ENV=production
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+CLOUDINARY_FOLDER_NAME=your_cloudinary_folder_name
+JWT_SECRET=your_jwt_secret
+JWT_USER_SECRET=your_jwt_user_secret
+JWT_EXPIRES_IN=1d
+```
+
+- Never commit secrets to Git!
+- These files are required for both local and production deployments.
 
 ### Local Development
-#### Using Docker Compose
-```zsh
-docker-compose up --build
-```
-- Access client: http://localhost:3000
-- Access server: http://localhost:5555
-
-#### Using Node/NPM
-```zsh
-# Terminal 1
-cd server
-npm install
-npm start
-
-# Terminal 2
-cd client
-npm install
-npm run dev
-```
+- **Docker Compose:**
+  ```sh
+  docker-compose up --build
+  ```
+  - Client: http://localhost:3000
+  - Server: http://localhost:5555
+- **Manual:**
+  ```sh
+  # Terminal 1
+  cd server && npm install && npm start
+  # Terminal 2
+  cd client && npm install && npm run dev
+  ```
 
 ---
 
-## ⚙️ DevOps & Deployment
+## DevOps & Deployment
 
-### Docker & Docker Compose
-- Build and push both images to Docker Hub:
-  ```zsh
-  ./build-and-push.sh
-  ```
-- Or build manually:
-  ```zsh
-  docker build -f client/next.dockerfile -t <user>/gen-client:v1 ./client
-  docker build -f server/node.dockerfile -t <user>/gen-serv:v1 ./server
-  docker push <user>/gen-client:v1 && docker push <user>/gen-serv:v1
+### Docker
+- Build & push images:
+  ```sh
+  ./scripts/build-and-push.sh
   ```
 
 ### Kubernetes
-- Deploy with raw manifests:
-  ```zsh
+- Deploy:
+  ```sh
   kubectl apply -f k8s/
   ```
-- Delete all:
-  ```zsh
+- Delete:
+  ```sh
   kubectl delete -f k8s/
-  ```
-- Get pods:
-  ```zsh
-  kubectl get pods
-  ```
-- Logs:
-  ```zsh
-  kubectl logs <pod>
   ```
 
 ### Helm
 - Install/Upgrade:
-  ```zsh
+  ```sh
   helm upgrade --install genkart ./helm --namespace default --create-namespace
   ```
 - Uninstall:
-  ```zsh
+  ```sh
   helm uninstall genkart --namespace default
   ```
 
 ### ArgoCD GitOps
-1. **Install ArgoCD** (if not already):
-   ```zsh
-   kubectl create namespace argocd
-   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-   ```
-2. **Apply Application Manifest:**
-   ```zsh
-   kubectl apply -f argocd/genkart-app.yaml -n argocd
-   ```
-3. **Access ArgoCD UI:**
-   ```zsh
-   kubectl port-forward svc/argocd-server -n argocd 8080:443
-   # Visit https://localhost:8080
-   # Username: admin
-   # Password: (see below)
-   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
-   ```
-4. **Sync & Manage:**
-   - Login to ArgoCD UI, find `genkart` app, and sync or troubleshoot as needed.
+- Install ArgoCD:
+  ```sh
+  kubectl create namespace argocd
+  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  ```
+- Apply Application Manifest:
+  ```sh
+  kubectl apply -f argocd/genkart-app.yaml -n argocd
+  ```
+- Access UI:
+  ```sh
+  kubectl port-forward svc/argocd-server -n argocd 8080:443
+  # Visit https://localhost:8080
+  # Username: admin
+  # Password:
+  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+  ```
 
 ### Secret Management
-- **Do NOT commit real secrets to Git.**
-- Use Helm's `values.yaml` for non-sensitive config, and external secret managers (e.g., [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets), [External Secrets](https://external-secrets.io/)) for production.
-- For local/dev, you can manually create secrets:
-  ```zsh
+- Use Helm templates for secrets, or external secret managers for production.
+- For dev:
+  ```sh
   kubectl create secret generic genkart-client-secrets --from-literal=KEY=VALUE
   kubectl create secret generic genkart-server-secrets --from-literal=KEY=VALUE
   ```
-- Or use the provided Helm templates and set values via `--set` or `-f mysecrets.yaml`.
 
 ### CI/CD & Quality
-- **GitHub Actions**: Automated build, test, scan, and deploy workflows.
-- **Trivy**: Container image vulnerability scanning in CI.
-- **SonarQube**: Code quality and security analysis in CI.
-- **Release Versioning**: Automated Helm chart and Docker tag versioning on main branch push.
+- **GitHub Actions:** Automated build, test, scan, and deploy.
+- **Trivy:** Container image vulnerability scanning.
+- **SonarQube:** Code quality and security analysis.
 
 ---
 
-## 🌟 What's New (2025)
-
-- **GCP Firewall:** SonarQube (port 9000) is now open for secure access in GKE deployments.
-- **Versioning:** Automated versioning and Helm chart updates now only occur on production (cloud) deployments via GitHub Actions workflow dispatch.
-- **Security:** All secrets are managed via GitHub Actions secrets, Kubernetes secrets, or external secret managers. No secrets are committed to Git.
-- **CI/CD:** Trivy and SonarQube scans are integrated and run on every push/PR. Docker images are built and pushed only on main branch pushes.
-- **Terraform:** Infrastructure as code provisions GKE, VPC, subnets, firewall rules (including SonarQube), static IP, and more. See `terraform/README.md` for details.
-- **Developer Experience:** Improved onboarding, troubleshooting, and rollback documentation. See new sections below for details.
+## Admin Account Setup
+- Admin creation is a one-time backend operation. See `/server/routes/authRoutes.js` for details.
+- After creation, comment out the signup route for security.
+- Login at `/admin` with your admin credentials.
 
 ---
 
-## DevOps Versioning & Cloud Deployments
+## Admin Login
 
-- **Automated versioning and Helm chart updates only occur on production (cloud) deployments.**
-- To trigger a version bump and update Docker/Helm tags, use the GitHub Actions workflow: **Release Versioning** → _Run workflow_ → set `environment` to `cloud`.
-- Local/dev deployments and regular pushes do **not** change the version or Helm chart tags.
-- This ensures version numbers only advance for production releases, keeping development and staging clean.
-
----
-
-## 🏗️ DevSecOps Deployment Architecture
+To access the admin dashboard, log in at [`/admin`](http://localhost:3000/admin) with your admin credentials.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Chirag-S-Kotian/genkart/main/readme-assets/devsecops-architecture.svg" alt="DevSecOps Architecture" width="80%"/>
+  <img src="readme-assets/adminsc.png" alt="Admin Login Screenshot" width="500"/>
 </p>
 
-**Architecture Overview:**
+**Example: Log in as admin using cURL**
 
-- **Source Control:** GitHub hosts all code, manifests, and IaC.
-- **CI/CD:** GitHub Actions automates build, test, security scan (Trivy), code quality (SonarQube), Docker image build/push, and Helm chart versioning.
-- **Container Registry:** Docker Hub stores production-ready images.
-- **Infrastructure as Code:** Terraform provisions GCP (GKE, VPC, firewall, static IP, etc.).
-- **Kubernetes Platform:** GKE runs the application workloads securely and scalably.
-- **Helm:** Helm charts manage Kubernetes deployments, services, secrets, and ingress.
-- **GitOps:** ArgoCD continuously syncs the Helm chart from GitHub to GKE, ensuring declarative, automated deployments.
-- **Secret Management:** K8s Secrets for dev, with support for Sealed Secrets/External Secrets for production.
-- **Monitoring & Security:**
-  - Trivy scans images for vulnerabilities in CI.
-  - GKE network policies, shielded nodes, and firewall rules enforce runtime security.
-
----
-
-## 🧑‍💻 Developer & DevOps Commands
-
-### Docker
-- Build: `docker build -f client/next.dockerfile -t <user>/gen-client:v1 ./client`
-- Build: `docker build -f server/node.dockerfile -t <user>/gen-serv:v1 ./server`
-- Push: `docker push <user>/gen-client:v1 && docker push <user>/gen-serv:v1`
-
-### Docker Compose
-- Up: `docker-compose up --build`
-- Down: `docker-compose down`
-
-### Kubernetes
-- Apply all: `kubectl apply -f k8s/`
-- Delete all: `kubectl delete -f k8s/`
-- Get pods: `kubectl get pods`
-- Logs: `kubectl logs <pod>`
-
-### Helm
-- Install/Upgrade: `helm upgrade --install genkart ./helm --namespace default --create-namespace`
-- Uninstall: `helm uninstall genkart --namespace default`
-
-### ArgoCD
-- Apply app: `kubectl apply -f argocd/genkart-app.yaml -n argocd`
-- Delete app: `kubectl delete -f argocd/genkart-app.yaml -n argocd`
-- Port-forward UI: `kubectl port-forward svc/argocd-server -n argocd 8080:443`
-
----
-
-## 🛡️ Troubleshooting
-- **Pods stuck in `CreateContainerConfigError`?**
-  - Check if secrets exist: `kubectl get secrets`
-  - Describe pod: `kubectl describe pod <pod>`
-- **ArgoCD app out of sync?**
-  - Sync manually in UI or with `kubectl`.
-  - Check Application events in ArgoCD UI.
-- **Helm secret not found?**
-  - Ensure secret templates are rendered before deployments.
-  - For production, use sealed/external secrets.
-
----
-
-## 👑 Admin Account Setup
-
-> **Note:** For security, there is no public admin signup UI. Admin creation is a one-time backend operation.
-
-### 1. Create Admin User (One-Time)
-- Go to `/server/routes/authRoutes.js` and **uncomment** the `admin signup` route if it's commented.
-- Use Postman or cURL to send a POST request to:
-  ```http
-  POST http://localhost:5555/api/auth/admin/signup
-  Content-Type: application/json
-  {
+```sh
+curl -X POST \
+  http://localhost:5000/auth/admin/login \
+  -H "Content-Type: application/json" \
+  -d '{
     "email": "your-admin-email@example.com",
-    "password": "your-strong-password"
-  }
-  ```
-- After successful creation, **comment out** the signup route again to prevent unauthorized admin creation.
+    "password": "your-admin-password"
+  }'
+```
 
-### 2. Admin Login
-- Go to the frontend: `http://localhost:3000/admin`
-- Use the admin email and password you set above to log in.
-- Access the admin dashboard at `/admin/secure/home` for product, user, and category management.
-
-### 3. Security Best Practices
-- Never expose the admin signup route in production.
-- Use strong, unique passwords for admin accounts.
-- Rotate admin credentials periodically.
+- On success, you'll receive a JSON response with an `adminToken`.
+- Use this token for authenticated admin API requests if needed.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 Pull requests and issues are welcome! Please open an issue for bugs or feature requests.
 
 ---
 
-## 📄 License
-This project is licensed under the terms of the MIT license. See [LICENSE](LICENSE) for details.
+## License
+MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-## 📬 Contact
+## Contact
 **Chirag S Kotian**  
 - GitHub: [Chirag-S-Kotian](https://github.com/Chirag-S-Kotian)
 - LinkedIn: [chirag-s-kotian](https://www.linkedin.com/in/chirag-s-kotian/)
-- Twitter: [@Chirag_S_kotian](https://twitter.com/Chirag_S_kotian)
 - Email: chirag.mca.2024@pim.ac.in
 - Website: [chirag-blockchian.vercel.app](https://chirag-blockchian.vercel.app/)
-
----
-
-## 🎨 Sketches & UI Flow
-
-<p align="center">
-  <img src="./readme-assets/herosc.png" alt="Hero Sketch" width="40%"/>
-  <img src="./readme-assets/exploresc.png" alt="Explore Sketch" width="40%"/>
-  <img src="./readme-assets/productsc.png" alt="Product Sketch" width="40%"/>
-  <img src="./readme-assets/adminsc.png" alt="Admin Sketch" width="40%"/>
-</p>
-
----
-
-<!-- End of README -->
