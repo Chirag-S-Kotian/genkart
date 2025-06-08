@@ -22,26 +22,43 @@ for tool in gcloud kubectl helm; do
   echo "[CHECK] $tool is installed."
 done
 
-# Prompt for client env variables
-read "NEXT_PUBLIC_API?Enter NEXT_PUBLIC_API (e.g. http://34.100.196.196:5555/api): "
-read "NEXT_PUBLIC_CLIENT_URL?Enter NEXT_PUBLIC_CLIENT_URL (e.g. http://34.100.196.196:3000/): "
-read "NEXT_PUBLIC_JWT_SECRET?Enter NEXT_PUBLIC_JWT_SECRET: "
-read "NEXT_PUBLIC_JWT_USER_SECRET?Enter NEXT_PUBLIC_JWT_USER_SECRET: "
-read "NEXT_PUBLIC_NODE_ENV?Enter NEXT_PUBLIC_NODE_ENV (e.g. production): "
+# Helper to get env var from file
+get_env() {
+  VAR=$1
+  FILE=$2
+  grep -E "^$VAR=" "$FILE" | head -n1 | cut -d'=' -f2- | tr -d "'\""
+}
 
-# Prompt for server env variables
-read "MONGO_URI?Enter MONGO_URI: "
-read "EMAIL_USER?Enter EMAIL_USER: "
-read "EMAIL_PASS?Enter EMAIL_PASS: "
-read "CLIENT_URL?Enter CLIENT_URL (e.g. http://34.100.196.196:3000): "
-read "NODE_ENV?Enter NODE_ENV (e.g. production): "
-read "CLOUDINARY_CLOUD_NAME?Enter CLOUDINARY_CLOUD_NAME: "
-read "CLOUDINARY_API_KEY?Enter CLOUDINARY_API_KEY: "
-read "CLOUDINARY_API_SECRET?Enter CLOUDINARY_API_SECRET: "
-read "CLOUDINARY_FOLDER_NAME?Enter CLOUDINARY_FOLDER_NAME: "
-read "JWT_SECRET?Enter JWT_SECRET: "
-read "JWT_USER_SECRET?Enter JWT_USER_SECRET: "
-read "JWT_EXPIRES_IN?Enter JWT_EXPIRES_IN (e.g. 1d): "
+# Read client env vars from client/.env
+CLIENT_ENV="client/.env"
+if [ ! -f "$CLIENT_ENV" ]; then
+  echo "[ERROR] $CLIENT_ENV not found!"
+  exit 2
+fi
+NEXT_PUBLIC_API=$(get_env NEXT_PUBLIC_API $CLIENT_ENV)
+NEXT_PUBLIC_CLIENT_URL=$(get_env NEXT_PUBLIC_CLIENT_URL $CLIENT_ENV)
+NEXT_PUBLIC_JWT_SECRET=$(get_env NEXT_PUBLIC_JWT_SECRET $CLIENT_ENV)
+NEXT_PUBLIC_JWT_USER_SECRET=$(get_env NEXT_PUBLIC_JWT_USER_SECRET $CLIENT_ENV)
+NEXT_PUBLIC_NODE_ENV=$(get_env NEXT_PUBLIC_NODE_ENV $CLIENT_ENV)
+
+# Read server env vars from server/.env
+SERVER_ENV="server/.env"
+if [ ! -f "$SERVER_ENV" ]; then
+  echo "[ERROR] $SERVER_ENV not found!"
+  exit 2
+fi
+MONGO_URI=$(get_env MONGO_URI $SERVER_ENV)
+EMAIL_USER=$(get_env EMAIL_USER $SERVER_ENV)
+EMAIL_PASS=$(get_env EMAIL_PASS $SERVER_ENV)
+CLIENT_URL=$(get_env CLIENT_URL $SERVER_ENV)
+NODE_ENV=$(get_env NODE_ENV $SERVER_ENV)
+CLOUDINARY_CLOUD_NAME=$(get_env CLOUDINARY_CLOUD_NAME $SERVER_ENV)
+CLOUDINARY_API_KEY=$(get_env CLOUDINARY_API_KEY $SERVER_ENV)
+CLOUDINARY_API_SECRET=$(get_env CLOUDINARY_API_SECRET $SERVER_ENV)
+CLOUDINARY_FOLDER_NAME=$(get_env CLOUDINARY_FOLDER_NAME $SERVER_ENV)
+JWT_SECRET=$(get_env JWT_SECRET $SERVER_ENV)
+JWT_USER_SECRET=$(get_env JWT_USER_SECRET $SERVER_ENV)
+JWT_EXPIRES_IN=$(get_env JWT_EXPIRES_IN $SERVER_ENV)
 
 # Encode values to base64 (no newlines)
 function b64() { echo -n "$1" | base64 | tr -d '\n'; }
