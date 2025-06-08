@@ -288,3 +288,32 @@ resource "google_compute_firewall" "genkart-allow-sonarqube" {
 
   depends_on = [google_project_service.compute]
 }
+
+# Automatically install ArgoCD, Helm, and kubectl after GKE cluster creation
+resource "null_resource" "post_gke_setup" {
+  depends_on = [google_container_cluster.genkart_gke]
+
+  provisioner "local-exec" {
+    command     = <<EOT
+      #!/bin/bash
+      set -e
+      echo "[INFO] Installing kubectl, helm, and ArgoCD after GKE cluster creation..."
+      if ! command -v kubectl >/dev/null 2>&1; then
+        echo "[INFO] Installing kubectl..."
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+      fi
+      if ! command -v helm >/dev/null 2>&1; then
+        echo "[INFO] Installing helm..."
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      fi
+      if ! kubectl get ns argocd >/dev/null 2>&1; then
+        echo "[INFO] Installing ArgoCD..."
+        kubectl create namespace argocd
+        kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      fi
+      echo "[INFO] All tools installed and ArgoCD deployed."
+    EOT
+    interpreter = ["/bin/bash", "-c"]
+  }
+}
