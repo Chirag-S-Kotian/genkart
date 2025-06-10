@@ -2,6 +2,7 @@
 /node_modules
 /build
 .env
+# Ignore environment variable files
 ./client/.env
 ./server/.env
 
