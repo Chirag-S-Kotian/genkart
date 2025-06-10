@@ -5,6 +5,7 @@
 
 # Ignore logs and temporary files
 /logs
+
 # Ignore environment variable files
 ./client/.env
 ./server/.env
