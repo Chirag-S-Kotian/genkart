@@ -7,6 +7,8 @@
 /logs
 /tmp
 
+# Ignore coverage reports
+
 # Ignore environment variable files
 ./client/.env
 ./server/.env
