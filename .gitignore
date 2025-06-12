@@ -11,6 +11,8 @@
 /coverage
 /coverage/*
 /coverage/**/*
+
+
 # Ignore environment variable files
 ./client/.env
 ./server/.env
