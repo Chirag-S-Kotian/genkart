@@ -3,7 +3,6 @@
 /build
 .env
 
-
 # Ignore logs and temporary files
 /logs
 /tmp
