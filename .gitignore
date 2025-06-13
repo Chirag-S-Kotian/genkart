@@ -3,9 +3,11 @@
 /build
 .env
 
+
 # Ignore logs and temporary files
 /logs
 /tmp
+
 
 # Ignore coverage reports
 /coverage
