@@ -7,7 +7,6 @@
 /logs
 /tmp
 
-
 # Ignore coverage reports
 /coverage
 /coverage/*
