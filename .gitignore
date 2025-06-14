@@ -17,7 +17,7 @@
 ./client/.env
 ./server/.env
 
-
+# Ignore IDE and editor specific files
 # Kubernetes secrets
 k8s-client-secret.yaml
 k8s-server-secret.yaml
