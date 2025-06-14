@@ -25,6 +25,7 @@ k8s-server-secret.yaml
 helm/templates/server-secret.yaml
 helm/templates/client-secret.yaml
 
+
 # Terraform state files
 terraform/terraform.tfvars
 terraform/.terraform/providers/registry.terraform.io/hashicorp/google/6.37.0/linux_amd64/terraform-provider-google_v6.37.0_x5
