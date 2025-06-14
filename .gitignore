@@ -33,4 +33,5 @@ terraform/.terraform/providers/registry.terraform.io/hashicorp/google/6.37.0/lin
 terraform/terraform.tfstate
 
 terraform/terraform.tfstate.backup
+
 terraform/.terraform/providers/registry.terraform.io/hashicorp/null/3.2.4/linux_amd64/terraform-provider-null_v3.2.4_x5
