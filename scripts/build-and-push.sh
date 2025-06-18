@@ -21,6 +21,7 @@ docker build -f server/node.dockerfile -t $SERVER_IMAGE ./server
 echo "Pushing client image to Docker Hub..."
 docker push $CLIENT_IMAGE
 
+# Push images to Docker Hub
 echo "Pushing server image to Docker Hub..."
 docker push $SERVER_IMAGE
 
