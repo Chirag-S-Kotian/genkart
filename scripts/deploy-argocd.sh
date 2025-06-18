@@ -65,6 +65,7 @@ JWT_EXPIRES_IN=$(get_env JWT_EXPIRES_IN $SERVER_ENV)
 # Encode values to base64 (no newlines)
 function b64() { echo -n "$1" | base64 | tr -d '\n'; }
 
+# Create helm directory structure
 cat > helm/templates/client-secret.yaml <<EOF
 apiVersion: v1
 kind: Secret
