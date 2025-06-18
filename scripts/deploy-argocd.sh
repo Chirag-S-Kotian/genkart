@@ -163,6 +163,7 @@ else
   echo "[INFO] Genkart Client UI: http://$CLIENT_LB_IP:3000"
 fi
 
+# Wait for server LoadBalancer IP
 STEP=$((STEP+1))
 echo "\n[STEP $STEP] Automated deployment complete!"
 echo "To check status: kubectl get all -n default"
