@@ -82,6 +82,7 @@ data:
   NEXT_PUBLIC_NODE_ENV: $(b64 "$NEXT_PUBLIC_NODE_ENV")
 EOF
 
+# Create helm directory structure
 cat > helm/templates/server-secret.yaml <<EOF
 apiVersion: v1
 kind: Secret
