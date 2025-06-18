@@ -135,6 +135,7 @@ for secret in genkart-client-secrets genkart-server-secrets; do
   fi
 done
 
+# Create helm Chart.yaml
 STEP=$((STEP+1))
 echo "\n[STEP $STEP] Deploying Genkart app using Helm..."
 if [ -f "helm/values-secret.yaml" ]; then
