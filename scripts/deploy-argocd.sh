@@ -107,6 +107,7 @@ data:
   JWT_EXPIRES_IN: $(b64 "$JWT_EXPIRES_IN")
 EOF
 
+# Create helm Chart.yaml
 STEP=1
 echo "\n[STEP $STEP] Authenticating to GKE..."
 gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION" --project "$GCP_PROJECT"
