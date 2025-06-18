@@ -9,6 +9,7 @@ GCP_PROJECT="$1"
 GKE_CLUSTER_NAME="$2"
 GKE_REGION="$3"
 
+# Check if all required arguments are provided
 if [ -z "$GCP_PROJECT" ] || [ -z "$GKE_CLUSTER_NAME" ] || [ -z "$GKE_REGION" ]; then
   echo "Usage: $0 <GCP_PROJECT> <GKE_CLUSTER_NAME> <GKE_REGION>"
   exit 1
