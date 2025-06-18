@@ -117,6 +117,7 @@ STEP=$((STEP+1))
 echo "\n[STEP $STEP] Ensuring 'default' namespace exists..."
 kubectl get ns default >/dev/null 2>&1 || kubectl create namespace default
 
+# Create helm Chart.yaml
 STEP=$((STEP+1))
 echo "\n[STEP $STEP] Updating Helm repos..."
 helm repo update
