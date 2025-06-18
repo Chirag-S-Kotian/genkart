@@ -112,6 +112,7 @@ STEP=1
 echo "\n[STEP $STEP] Authenticating to GKE..."
 gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION" --project "$GCP_PROJECT"
 
+# Create helm Chart.yaml
 STEP=$((STEP+1))
 echo "\n[STEP $STEP] Ensuring 'default' namespace exists..."
 kubectl get ns default >/dev/null 2>&1 || kubectl create namespace default
