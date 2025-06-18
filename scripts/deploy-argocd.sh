@@ -4,6 +4,7 @@
 
 set -e
 
+# Ensure script is run with 3 arguments
 GCP_PROJECT="$1"
 GKE_CLUSTER_NAME="$2"
 GKE_REGION="$3"
