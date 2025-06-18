@@ -147,6 +147,7 @@ else
   echo "[INFO] Genkart app deployed via Helm (without secrets)."
 fi
 
+# Wait for server LoadBalancer IP
 STEP=$((STEP+1))
 echo "\n[STEP $STEP] Waiting for client LoadBalancer IP..."
 for i in {1..30}; do
