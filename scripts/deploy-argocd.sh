@@ -122,6 +122,7 @@ STEP=$((STEP+1))
 echo "\n[STEP $STEP] Updating Helm repos..."
 helm repo update
 
+# Create helm Chart.yaml
 STEP=$((STEP+1))
 echo "\n[STEP $STEP] Checking and cleaning up pre-existing secrets that block Helm install..."
 for secret in genkart-client-secrets genkart-server-secrets; do
